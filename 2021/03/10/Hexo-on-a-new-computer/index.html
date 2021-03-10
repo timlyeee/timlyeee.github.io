@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<!-- Head tag -->
+<head><meta name="generator" content="Hexo 3.9.0">
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+
+  <!--Description-->
+  
+
+  <!--Author-->
+  
+  <meta name="author" content="司道凡">
+  
+
+  <!--Open Graph Title-->
+  
+      <meta property="og:title" content="记录本博客的第一次迁移">
+  
+  <!--Open Graph Description-->
+  
+  <!--Open Graph Site Name-->
+  <meta property="og:site_name" content="Hexo">
+  <!--Type page-->
+  
+      <meta property="og:type" content="article">
+  
+  <!--Page Cover-->
+  
+
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+
+  <!-- Title -->
+  
+  <title>记录本博客的第一次迁移 - Hexo</title>
+
+
+  <link rel="shortcut icon" href="https://hexo.io/icon/favicon-96x96.png">
+
+  <!-- Custom CSS/Sass -->
+  <link rel="stylesheet" href="/css/style.css">
+
+  <!----------------------------
+  https://github.com/GallenHu/hexo-theme-Daily
+
+ _____            _   _
+|  __ \          (_) | |
+| |  | |   __ _   _  | |  _   _
+| |  | |  / _` | | | | | | | | |
+| |__| | | (_| | | | | | | |_| |
+|_____/   \__,_| |_| |_|  \__, |
+                          __/ |
+                         |___/
+
+    --------------------------->
+
+</head>
+
+
+<body>
+
+  <!-- Nav -->
+  <header class="site-header">
+  <div class="header-inside">
+    <div class="logo">
+      <a href="/" rel="home">
+        
+        <img src="https://hexo.io/logo.svg" alt="Hexo" height="60">
+        
+      </a>
+    </div>
+    <!-- Navigation -->
+    <nav class="navbar">
+      <!-- Collect the nav links, forms, and other content for toggling -->
+      <div class="collapse">
+        <ul class="navbar-nav">
+          
+          
+            <li>
+              <a href="/.">
+                
+                  home
+                
+              </a>
+            </li>
+          
+            <li>
+              <a href="/archives">
+                
+                  archive
+                
+              </a>
+            </li>
+          
+        </ul>
+      </div>
+      <!-- /.navbar-collapse -->
+    </nav>
+    <div class="button-wrap">
+      <button class="menu-toggle">Primary Menu</button>
+    </div>
+  </div>
+</header>
+
+
+  <!-- Main Content -->
+  <div class="content-area">
+  <div class="post">
+    <!-- Post Content -->
+    <div class="container">
+      <article>
+        <!-- Title date & tags -->
+        <div class="post-header">
+          <h1 class="entry-title">
+            记录本博客的第一次迁移
+            
+          </h1>
+          <p class="posted-on">
+          2021-03-10
+          </p>
+          <div class="tags-links">
+            
+              
+            
+          </div>
+        </div>
+        <!-- Post Main Content -->
+        <div class="entry-content has_line_number">
+          <h2 id="迁移的目的"><a href="#迁移的目的" class="headerlink" title="迁移的目的"></a>迁移的目的</h2><p>我现在大多数时间都是在用windows系统的这台电脑，所以原本的码字用的mac逐渐被我舍弃。之前的博客也需要被迁移。虽然这么说，但是我其实没有那么多文章在这个博客上。</p>
+<p>这是我第一次迁移，算是一个踩坑的过程和指令的熟练过程</p>
+<h2 id="基本工作"><a href="#基本工作" class="headerlink" title="基本工作"></a>基本工作</h2><p>这个系统本身就有NodeJS存在，所以我不需要从头开始装Node，但是原本npm都是在国外下载的，所以回国之后需要安装一下淘宝镜像</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">npm install -g cnpm --registry=https://registry.npm.taobao.org</span><br></pre></td></tr></table></figure>
+
+<p>接下来就是直接把原本的所有内容拷贝到这台电脑上，这取决于用了多少包和文章。不过说实话，用RSS下载的时间和用U盘拷贝的时间我更偏向后者。有这么快的传输速度为什么不用？</p>
+<p>拷贝之后需要更新一下包。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">npm install </span><br><span class="line">//或者fix用来校对一下版本</span><br><span class="line">npm audit fix</span><br></pre></td></tr></table></figure>
+
+<p>然后以防万一，安装一下全局hexo-cli</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">npm install hexo-cli -g</span><br></pre></td></tr></table></figure>
+
+<p>做到这一步我们可以开始测试hexo的各项功能。</p>
+<h2 id="本地服务器"><a href="#本地服务器" class="headerlink" title="本地服务器"></a>本地服务器</h2><p>首先是Hexo server，这一步对我来说是OK的，本地服务器能够完美运行。</p>
+<p>但是Hexo new并不能正常运行，</p>
+<blockquote>
+<p>报错：ERROR Plugin load failed: hexo-renderer-sass</p>
+</blockquote>
+<p>这是用来将sass语言转换为css语言的项目依赖。实际上我在第一次实习的时候有接触过。但是用的不多。查找之后， 发现只需要重装就行。</p>
+<p>其实在这一步的时候我是没有安装淘宝镜像的，所以报了另外一个错误。</p>
+<blockquote>
+<p>“Unexpected end of JSON input while parsing near···”</p>
+</blockquote>
+<p>这是因为我在之前install各项内容时，并没有找到所有的源地址，从而导致了写入Json文件时错误。因为仔细观察这个错误会发现是package-lock.json文件中错误。</p>
+<p>所以我重新清理了缓存并且卸载重装了node-sass包。</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">npm cache clean --force</span><br><span class="line"><span class="meta">&gt;</span>&gt;npm WARN using --force I sure hope you know what you are doing.</span><br><span class="line">cnpm install node-sass</span><br></pre></td></tr></table></figure>
+
+<p>至此，就可以使用hexo new命令了。</p>
+<hr>
+<p>我已经好久没有登录我的博客了，以至于我都快忘了自己当初立下的誓言。总感觉我的冲劲正在一点点的被消磨耗尽。但今天笔试乐狗科技让我意识到，要是连工都没得打的话，那岂不是连冲出去的机会都没有了？冲劲又往哪里去放呢？</p>
+<p>这样想着，我还是决定把东西记录下来，至少这次春招会让我学到很多东西。我没有参加秋招，等于我失去了一次机会，如果没有成功通过这些笔试和面试，那么，我就只能去做社会招聘？或者继续蹭下一届的校园招聘，那我就离自己的游戏开发的梦想越来越远了。</p>
+<p>也是这样想着，又苦于自己的法语还没考过，如果4月9日的考试还是没法考到B2的话，自己的人生又要往后拖了。我今年24，离30岁并不远了。这些压力似乎在逼着我热爱上编程这个职业，让我爱上努力这件事。明明我是很懒的一个人。</p>
+
+        </div>
+      </article>
+    </div>
+    <!-- Comments -->
+    <div class="container">
+      
+<section id="comment">
+  <!-- <h1 class="title">留言</h1> -->
+
+  
+</section>
+
+
+    </div>
+    <!-- Pre or Next -->
+    <div class="nav-links">
+      
+      
+        <div class="nav-next">
+          <a href="/2020/09/28/c-Reference/" rel="prev">下一页 <span class="meta-arraw meta-arraw-right"></span></a>
+        </div>
+      
+    </div>
+
+  </div>
+</div>
+
+
+  <!-- Footer -->
+  <!-- Footer-widgets -->
+<div class="footer-widgets">
+  <div class="row inside-wrapper">
+    <div class="col-1-3">
+      <aside>
+        <h1 class="widget-title">关于本站</h1>
+        <div class="custom-widget-content">
+          
+          <ul><li><a href="https://github.com/GallenHu/hexo-theme-Daily/wiki">如何自定义这里的内容(配置教程)?</a></li></ul>
+        </div>
+      </aside>
+    </div>
+    <div class="col-1-3">
+      <aside>
+        <h1 class="widget-title">与我联系</h1>
+        <div class="widget-text">
+          
+            
+              <a href="https://github.com/timlyeee" class="icon icon-github" target="_blank">github</a>
+            
+              <a href="mailto:washaobang_wkmail@163.com" class="icon icon-mail" target="_blank">mail</a>
+            
+          
+        </div>
+      </aside>
+    </div>
+    <div class="col-1-3">
+      <aside>
+        <h1 class="widget-title">站内搜索</h1>
+        <div class="widget-text">
+          <form onSubmit="return appDaily.submitSearch('')">
+            <p>
+              <input type="text" placeholder="search..." id="homeSearchInput">
+            </p>
+            <!-- <input type="submit" value="GO"> -->
+          </form>
+        </div>
+      </aside>
+    </div>
+  </div>
+</div>
+<!-- Footer -->
+<footer class="site-info">
+  <p>
+    <span>Hexo &copy; 2021</span>
+    
+      <span class="split">|</span>
+      <span>Powered by <a href="https://hexo.io/" target="_blank">Hexo</a> with Theme <a href="https://github.com/GallenHu/hexo-theme-Daily" target="_blank">Daily</a></span>
+    
+  </p>
+</footer>
+
+
+  <!-- After footer scripts -->
+  <!-- scripts -->
+<script src="/js/app.js"></script>
+
+
+
+
+
+</body>
+
+</html>
