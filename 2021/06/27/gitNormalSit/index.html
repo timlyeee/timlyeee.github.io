@@ -16,7 +16,7 @@
 
   <!--Open Graph Title-->
   
-      <meta property="og:title" content="Hexo">
+      <meta property="og:title" content="Git常用命令以及使用场景">
   
   <!--Open Graph Description-->
   
@@ -24,7 +24,7 @@
   <meta property="og:site_name" content="Hexo">
   <!--Type page-->
   
-      <meta property="og:type" content="website">
+      <meta property="og:type" content="article">
   
   <!--Page Cover-->
   
@@ -33,7 +33,7 @@
 
   <!-- Title -->
   
-  <title>归档：2021/4 - Hexo</title>
+  <title>Git常用命令以及使用场景 - Hexo</title>
 
 
   <link rel="shortcut icon" href="/images/MyIcon2.ico">
@@ -105,122 +105,67 @@
 
 
   <!-- Main Content -->
-  
-
-<!-- Main Content -->
-<div class="archive content-area">
-  <div class="container">
-    <h1 class="entry-title">2021/4</h1>
-    <div class="row">
-      <div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1">
-        <!-- Use lodash to classify posts. See https://lodash.com/docs#groupBy
-          1. group site.posts by year
-          2. sort posts-in-one-year by Month and Day
-        -->
-        
-
-        
-          <h2 class="year">2021</h2>
-          <ul class="list">
+  <div class="content-area">
+  <div class="post">
+    <!-- Post Content -->
+    <div class="container">
+      <article>
+        <!-- Title date & tags -->
+        <div class="post-header">
+          <h1 class="entry-title">
+            Git常用命令以及使用场景
             
-  <li>
-    <span class="date">
-      2021-07-19
-    </span>
-    <a href="/2021/07/19/petit-cmake/" class="title">
-      简单的cmake小项目
-    </a>
-  </li>
-
-  <li>
-    <span class="date">
-      2021-06-27
-    </span>
-    <a href="/2021/06/27/gitNormalSit/" class="title">
-      Git常用命令以及使用场景
-    </a>
-  </li>
-
-  <li>
-    <span class="date">
-      2021-06-20
-    </span>
-    <a href="/2021/06/20/how2CompileALibrary-md/" class="title">
-      如何从零开始编译二进制静态库或动态库
-    </a>
-  </li>
-
-  <li>
-    <span class="date">
-      2021-05-23
-    </span>
-    <a href="/2021/05/23/pywinautoAndSubprocess/" class="title">
-      通过创建并监听子进程并用pywinauto进行测试
-    </a>
-  </li>
-
-  <li>
-    <span class="date">
-      2021-04-05
-    </span>
-    <a href="/2021/04/05/locks-2/" class="title">
-      从互斥机制到锁
-    </a>
-  </li>
-
-  <li>
-    <span class="date">
-      2021-03-11
-    </span>
-    <a href="/2021/03/11/locks-1/" class="title">
-      同步，互斥，阻塞
-    </a>
-  </li>
-
-  <li>
-    <span class="date">
-      2021-03-10
-    </span>
-    <a href="/2021/03/10/Hexo-on-a-new-computer/" class="title">
-      记录本博客的第一次迁移
-    </a>
-  </li>
-
-
-          </ul>
-        
-          <h2 class="year">2020</h2>
-          <ul class="list">
+          </h1>
+          <p class="posted-on">
+          2021-06-27
+          </p>
+          <div class="tags-links">
             
-  <li>
-    <span class="date">
-      2020-09-28
-    </span>
-    <a href="/2020/09/28/c-Reference/" class="title">
-      c++Reference
-    </a>
-  </li>
-
-
-          </ul>
-        
-          <h2 class="year">2019</h2>
-          <ul class="list">
+              
             
-  <li>
-    <span class="date">
-      2019-10-16
-    </span>
-    <a href="/2019/10/16/Dream-start/" class="title">
-      梦想要先从有背景板开始
-    </a>
-  </li>
+          </div>
+        </div>
+        <!-- Post Main Content -->
+        <div class="entry-content has_line_number">
+          <p>Git在日常工作场景中非常常见，但是对于其类似的使用场景大多数新手会十分懵逼，此文我希望能够整理一些常见的使用场景，警示自己并告知后来者</p>
+<h2 id="Git-Checkout-amp-amp-Git-Reset-amp-amp-Git-Stash"><a href="#Git-Checkout-amp-amp-Git-Reset-amp-amp-Git-Stash" class="headerlink" title="Git Checkout &amp;&amp; Git Reset &amp;&amp; Git Stash"></a>Git Checkout &amp;&amp; Git Reset &amp;&amp; Git Stash</h2><p>一个比较常用的场景是切换分支，因为同一个项目会有多个不同的目的。从而创建出不同的分支。当我们在A分支工作时，突然接到一个需求需要去帮忙review B分支，或者帮忙测试B分支。这时候重新去下载一个分支是很愚蠢的一件事。</p>
+<p>我们可以对一个刚刚Git clone下来的项目进行Git Checkout B的操作，因为此时没有任何修改。</p>
+<p>但是如果我们已经在本分支上工作过一段时间，我们可以怎么做呢？</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">Git Add .</span><br><span class="line">Git Commit -m "commit message"</span><br><span class="line">Git Push</span><br><span class="line">Git Checkout B</span><br></pre></td></tr></table></figure>
 
+<p>这其实是一个很笨重的做法，这不仅会多出一个不太重要的commit搞混思路，也会让仓库多一个需要记录的内容。所以我们可以在本地临时保存这个修改，即使用Git Stash命令。</p>
+<figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">Git Stash</span><br><span class="line">Git Checkout B</span><br><span class="line"><span class="comment"># After Operation</span></span><br><span class="line">Git Checkout A</span><br><span class="line">Git Pop</span><br></pre></td></tr></table></figure>
 
-          </ul>
-        
-      </div>
+<p>在操作结束之后可以Git Pop原来保存的内容，并继续在原来的分支上工作</p>
+<h2 id="Git-Rebase-amp-amp-Git-Merge"><a href="#Git-Rebase-amp-amp-Git-Merge" class="headerlink" title="Git Rebase &amp;&amp; Git Merge"></a>Git Rebase &amp;&amp; Git Merge</h2>
+        </div>
+      </article>
     </div>
+    <!-- Comments -->
+    <div class="container">
+      
+<section id="comment">
+  <!-- <h1 class="title">留言</h1> -->
+
+  
+</section>
+
+
+    </div>
+    <!-- Pre or Next -->
+    <div class="nav-links">
+      
+        <div class="nav-previous">
+          <a href="/2021/07/19/petit-cmake/" rel="prev"><span class="meta-arraw meta-arraw-left"></span> 上一页</a>
+        </div>
+      
+      
+        <div class="nav-next">
+          <a href="/2021/06/20/how2CompileALibrary-md/" rel="prev">下一页 <span class="meta-arraw meta-arraw-right"></span></a>
+        </div>
+      
+    </div>
+
   </div>
 </div>
 

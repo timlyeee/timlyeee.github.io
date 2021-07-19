@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<!-- Head tag -->
+<head><meta name="generator" content="Hexo 3.9.0">
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+
+  <!--Description-->
+  
+
+  <!--Author-->
+  
+  <meta name="author" content="司道凡">
+  
+
+  <!--Open Graph Title-->
+  
+      <meta property="og:title" content="简单的cmake小项目">
+  
+  <!--Open Graph Description-->
+  
+  <!--Open Graph Site Name-->
+  <meta property="og:site_name" content="Hexo">
+  <!--Type page-->
+  
+      <meta property="og:type" content="article">
+  
+  <!--Page Cover-->
+  
+
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+
+  <!-- Title -->
+  
+  <title>简单的cmake小项目 - Hexo</title>
+
+
+  <link rel="shortcut icon" href="/images/MyIcon2.ico">
+
+  <!-- Custom CSS/Sass -->
+  <link rel="stylesheet" href="/css/style.css">
+
+  <!----------------------------
+  https://github.com/GallenHu/hexo-theme-Daily
+
+ _____            _   _
+|  __ \          (_) | |
+| |  | |   __ _   _  | |  _   _
+| |  | |  / _` | | | | | | | | |
+| |__| | | (_| | | | | | | |_| |
+|_____/   \__,_| |_| |_|  \__, |
+                          __/ |
+                         |___/
+
+    --------------------------->
+
+</head>
+
+
+<body>
+
+  <!-- Nav -->
+  <header class="site-header">
+  <div class="header-inside">
+    <div class="logo">
+      <a href="/" rel="home">
+        
+        <img src="images/MyIcon.png" alt="Hexo" height="60">
+        
+      </a>
+    </div>
+    <!-- Navigation -->
+    <nav class="navbar">
+      <!-- Collect the nav links, forms, and other content for toggling -->
+      <div class="collapse">
+        <ul class="navbar-nav">
+          
+          
+            <li>
+              <a href="/.">
+                
+                  home
+                
+              </a>
+            </li>
+          
+            <li>
+              <a href="/archives">
+                
+                  archive
+                
+              </a>
+            </li>
+          
+        </ul>
+      </div>
+      <!-- /.navbar-collapse -->
+    </nav>
+    <div class="button-wrap">
+      <button class="menu-toggle">Primary Menu</button>
+    </div>
+  </div>
+</header>
+
+
+  <!-- Main Content -->
+  <div class="content-area">
+  <div class="post">
+    <!-- Post Content -->
+    <div class="container">
+      <article>
+        <!-- Title date & tags -->
+        <div class="post-header">
+          <h1 class="entry-title">
+            简单的cmake小项目
+            
+          </h1>
+          <p class="posted-on">
+          2021-07-19
+          </p>
+          <div class="tags-links">
+            
+              
+            
+          </div>
+        </div>
+        <!-- Post Main Content -->
+        <div class="entry-content has_line_number">
+          <h2 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h2><p>最近对于vs和cmake的熟悉程度日益加深并且对于各种项目更加熟悉之后，想试着在以往的项目中加入相关的元素，使其能够在各种环境下运行，比如不依赖特定的vs toolset和sdk，否则比如之前写的一个vs项目，当真是换了一台机器就不能运行了。</p>
+<p>当然我想这也是大部分项目对于项目结构的一个最低要求。比如v8的项目或者libuv的第三方库实际上并没有对windows端有什么特例，而是单纯的从configure或者cmake开始配置。所以这次这篇文章想简单的记录一下自己写的第一个小的cmakelist.txt并且剖析一下其中的原理。</p>
+<h2 id="cmake的必要条件"><a href="#cmake的必要条件" class="headerlink" title="cmake的必要条件"></a>cmake的必要条件</h2><p>首先一个项目最需要明确的有两点，就是项目的名称和使用的cmake版本。</p>
+<h3 id="环境声明"><a href="#环境声明" class="headerlink" title="环境声明"></a>环境声明</h3><figure class="highlight cmake"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">cmake_minimum_required</span>(VERSION <span class="number">3.8</span>)</span><br><span class="line"><span class="keyword">set</span>(PROJECT_NAME <span class="string">"petitEngine"</span>)</span><br><span class="line"><span class="keyword">project</span>(<span class="variable">$&#123;PROJECT_NAME&#125;</span> CXX)</span><br></pre></td></tr></table></figure>
+
+<p>以我的小opengl项目举例，我所认定的cmake版本必须是3.8以上并且语言是c++。所以我的环境设置就通过这几行代码来声明。</p>
+<h3 id="set"><a href="#set" class="headerlink" title="set"></a>set</h3><p>需要注意的是我们的项目名称的声明方法实际上是用set做的，而cmake中本身也有很多已经命名过的变量，比如PROJECT_NAME就是特指项目名称。</p>
+<p>在通常cmake文件中所有的变量都是通过set去初始化的，而后续对于设置的值的链接或者包含头文件的操作则需要用${}包含起来才能使用。</p>
+<h3 id="source-code"><a href="#source-code" class="headerlink" title="source code"></a>source code</h3><p>接下来我们要确认有哪些文件是本项目的源代码，并且需要和依赖文件区分开来。</p>
+<figure class="highlight cmake"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">set</span>(PROJ_SOURCES </span><br><span class="line">    <span class="variable">$&#123;CMAKE_CURRENT_LIST_DIR&#125;</span>/<span class="keyword">include</span>/main.cpp</span><br><span class="line">    ...</span><br><span class="line">)</span><br><span class="line"><span class="keyword">add_executable</span>(PROJECT_NAME <span class="variable">$&#123;PROJ_SOURCES&#125;</span>)</span><br></pre></td></tr></table></figure>
+
+<p>假设我们有一个main文件并且需要作为源文件导入到vs项目中，我们需要首先设置一个变量x，在这里我命名为Proj_source，并且将main的路径作为第二个变量写入。当然后续可以跟任意多的文件，只需要保证第一个变量是名称就行。</p>
+<p>接下来我们使用add_executable命令将这些源文件赋值到PROJECT_NAME中，表明这是它的源代码。当项目生成后，我们就可以在项目的路径中找到这些文件了。</p>
+<h3 id="依赖项"><a href="#依赖项" class="headerlink" title="依赖项"></a>依赖项</h3><figure class="highlight cmake"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">add_library</span>(glew STATIC IMPORTED GLOBAL)</span><br><span class="line"><span class="keyword">set_target_properties</span>(glew PROPERTIES</span><br><span class="line">    IMPORTED_LOCATION <span class="variable">$&#123;CMAKE_CURRENT_LIST_DIR&#125;</span>/glew-<span class="number">2.1</span>.<span class="number">0</span>/lib/Release/x64/glew32s.lib</span><br><span class="line">)</span><br><span class="line"><span class="keyword">add_library</span>(glfw STATIC IMPORTED GLOBAL)</span><br><span class="line"><span class="keyword">set_target_properties</span>(glfw PROPERTIES</span><br><span class="line">    IMPORTED_LOCATION <span class="variable">$&#123;CMAKE_CURRENT_LIST_DIR&#125;</span>/glfw-<span class="number">3.3</span>.bin.WIN64/lib-vc2017/glfw3.lib</span><br><span class="line">)</span><br></pre></td></tr></table></figure>
+
+<p>我的项目中依赖到了几个关键的库，比如glew和glfw来作为opengl的接口。所以我用add_library的方式将它们添加到各自的命名项中，注意此时不需要set来初始化变量。</p>
+<p>同时在add_library中STATIC表示该项是以静态库的方式导入，如果是动态库则使用SHARED。</p>
+<p>声明了几个库之后需要将它们链接到项目中，同时也可以添加一些别的必要库比如系统库，在cmake的过程中这些库即使没有被用户声明也是可以找到的。</p>
+<figure class="highlight cmake"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">target_link_libraries</span>(PROJECT_NAME PUBLIC </span><br><span class="line">	glfw </span><br><span class="line">	glew </span><br><span class="line">	opengl32)</span><br><span class="line"><span class="keyword">target_include_directories</span>(PROJECT_NAME PUBLIC</span><br><span class="line">    <span class="variable">$&#123;CMAKE_CURRENT_LIST_DIR&#125;</span>/glfw-<span class="number">3.3</span>.bin.WIN64/<span class="keyword">include</span>/GLFW</span><br><span class="line">    <span class="variable">$&#123;CMAKE_CURRENT_LIST_DIR&#125;</span>/glew-<span class="number">2.1</span>.<span class="number">0</span>/<span class="keyword">include</span>/GL                           </span><br><span class="line">)</span><br></pre></td></tr></table></figure>
+
+<p>我们不仅需要其静态库，同样需要头文件的支持，所以在link的同时可以使用target_include_directories命令来将头文件包含进去。这样就可以直接用</p>
+<figure class="highlight cxx"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;glew.h&gt;</span></span></span><br></pre></td></tr></table></figure>
+
+<p>的方法来包含而不需要添加相对路径。相对而言更加轻松。</p>
+<h3 id="cmake文件到vs项目"><a href="#cmake文件到vs项目" class="headerlink" title="cmake文件到vs项目"></a>cmake文件到vs项目</h3><p>当我们安装了cmake，visual studio和拥有了一个cmake文件之后，我们就可以省略繁琐的gcc命令而直接使用cmake命令来帮助我们完成操作了。<br>事实上我们同样可以通过cmake gui的方式来构建项目，但最终都是要回归代码的所以我在这里直接写shell脚本的写法了</p>
+<figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">cmake -B out/x64\</span><br><span class="line">     -A x64 \</span><br><span class="line">     -G<span class="string">"Visual Studio 15 2017"</span></span><br></pre></td></tr></table></figure>
+
+<p>通过上述脚本，用-B指定项目所在目录，用-A指定32位或者64位架构，用-G表示用哪种编译器，就可以生成我们的项目了。注意的是，这个脚本只在cmakelist.txt文件同级的目录下可用，如果在别的目录则需要加上-S选项来指定cmakelist.txt文件所在位置。</p>
+<p>总之，这些都可以在cmake –help中获取。</p>
+<h3 id="后记"><a href="#后记" class="headerlink" title="后记"></a>后记</h3><p>虽然但是，各种第三方开源库的编译仍然很麻烦，我所掌握的只是一些皮毛，在cmake中我们还可以控制各种宏的生成以及同样可以做if判断，这些同样使得我们很多依赖的库通过不同的构建选项编译出来的lib文件都不相同。</p>
+<p>一想到我虽然把第三方库都编出来了，但却在运行时崩溃，就免不了一阵头大。。</p>
+
+        </div>
+      </article>
+    </div>
+    <!-- Comments -->
+    <div class="container">
+      
+<section id="comment">
+  <!-- <h1 class="title">留言</h1> -->
+
+  
+</section>
+
+
+    </div>
+    <!-- Pre or Next -->
+    <div class="nav-links">
+      
+      
+        <div class="nav-next">
+          <a href="/2021/06/27/gitNormalSit/" rel="prev">下一页 <span class="meta-arraw meta-arraw-right"></span></a>
+        </div>
+      
+    </div>
+
+  </div>
+</div>
+
+
+  <!-- Footer -->
+  <!-- Footer-widgets -->
+<div class="footer-widgets">
+  <div class="row inside-wrapper">
+    <div class="col-1-3">
+      <aside>
+        <h1 class="widget-title">关于本站</h1>
+        <div class="custom-widget-content">
+          
+          <ul><li><a href="https://github.com/GallenHu/hexo-theme-Daily/wiki">如何自定义这里的内容(配置教程)?</a></li></ul>
+        </div>
+      </aside>
+    </div>
+    <div class="col-1-3">
+      <aside>
+        <h1 class="widget-title">与我联系</h1>
+        <div class="widget-text">
+          
+            
+              <a href="https://github.com/timlyeee" class="icon icon-github" target="_blank">github</a>
+            
+              <a href="mailto:washaobang_wkmail@163.com" class="icon icon-mail" target="_blank">mail</a>
+            
+          
+        </div>
+      </aside>
+    </div>
+    <div class="col-1-3">
+      <aside>
+        <h1 class="widget-title">站内搜索</h1>
+        <div class="widget-text">
+          <form onSubmit="return appDaily.submitSearch('')">
+            <p>
+              <input type="text" placeholder="search..." id="homeSearchInput">
+            </p>
+            <!-- <input type="submit" value="GO"> -->
+          </form>
+        </div>
+      </aside>
+    </div>
+  </div>
+</div>
+<!-- Footer -->
+<footer class="site-info">
+  <p>
+    <span>Hexo &copy; 2021</span>
+    
+      <span class="split">|</span>
+      <span>Powered by <a href="https://hexo.io/" target="_blank">Hexo</a> with Theme <a href="https://github.com/GallenHu/hexo-theme-Daily" target="_blank">Daily</a></span>
+    
+  </p>
+</footer>
+
+
+  <!-- After footer scripts -->
+  <!-- scripts -->
+<script src="/js/app.js"></script>
+
+
+
+
+
+</body>
+
+</html>
