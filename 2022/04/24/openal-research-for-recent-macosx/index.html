@@ -1,29 +1,31 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
-<head>
-  <meta charset="utf-8">
-  
-  <title>Untitled | timlyeee.github.io</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
-  <meta property="og:type" content="website">
-<meta property="og:title" content="Untitled">
-<meta property="og:url" content="http://timlyeee.github.io/Untitled/index.html">
-<meta property="og:site_name" content="timlyeee.github.io">
-<meta property="og:locale" content="zh_CN">
-<meta property="article:published_time" content="2019-10-21T15:32:41.000Z">
-<meta property="article:modified_time" content="2023-01-05T12:56:11.061Z">
-<meta property="article:author" content="timlyeee">
-<meta name="twitter:card" content="summary">
-  
-    <link rel="alternate" href="../atom.xml" title="timlyeee.github.io" type="application/atom+xml">
-  
-  
-    <link rel="shortcut icon" href="../favicon.ico">
-  
-  
+
 <link rel="stylesheet" href="../css/typing.css">
 <link rel="stylesheet" href="../css/donate.css">
 
+<head>
+  <meta charset="utf-8">
+  
+  <title>MacOSX上的OpenAL开源代码分析 | timlyeee.github.io</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <meta name="description" content="最近工作上对于音频有一些issue需要处理，但是OpenAL的文档相当模糊，也鲜有StackOverflow的回答，无奈之下我决定依据Apple最新的OpenAL开源代码做一些调查分析。 最主要的关注点就是alSourcePlay接口的源码分析和状态分析。 OpenAL 简单概念介绍我们先抛开一切冗杂的前奏，直接从接口介绍几个必须了解的参数，以及为什么我们要关注它们。 AL_SOURCE_STAT">
+<meta property="og:type" content="article">
+<meta property="og:title" content="MacOSX上的OpenAL开源代码分析">
+<meta property="og:url" content="http://timlyeee.github.io/2022/04/24/openal-research-for-recent-macosx/index.html">
+<meta property="og:site_name" content="timlyeee.github.io">
+<meta property="og:description" content="最近工作上对于音频有一些issue需要处理，但是OpenAL的文档相当模糊，也鲜有StackOverflow的回答，无奈之下我决定依据Apple最新的OpenAL开源代码做一些调查分析。 最主要的关注点就是alSourcePlay接口的源码分析和状态分析。 OpenAL 简单概念介绍我们先抛开一切冗杂的前奏，直接从接口介绍几个必须了解的参数，以及为什么我们要关注它们。 AL_SOURCE_STAT">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2022-04-24T05:53:05.000Z">
+<meta property="article:modified_time" content="2023-01-05T12:56:11.065Z">
+<meta property="article:author" content="timlyeee">
+<meta name="twitter:card" content="summary">
+  
+    <link rel="alternate" href="../../../../atom.xml" title="timlyeee.github.io" type="application/atom+xml">
+  
+  
+    <link rel="shortcut icon" href="../../../../favicon.ico">
+  
   
   
     
