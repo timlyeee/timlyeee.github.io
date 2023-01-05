@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  
+  <title>MacOSX上的OpenAL开源代码分析 | timlyeee.github.io</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <meta name="description" content="最近工作上对于音频有一些issue需要处理，但是OpenAL的文档相当模糊，也鲜有StackOverflow的回答，无奈之下我决定依据Apple最新的OpenAL开源代码做一些调查分析。 最主要的关注点就是alSourcePlay接口的源码分析和状态分析。 OpenAL 简单概念介绍我们先抛开一切冗杂的前奏，直接从接口介绍几个必须了解的参数，以及为什么我们要关注它们。 AL_SOURCE_STAT">
+<meta property="og:type" content="article">
+<meta property="og:title" content="MacOSX上的OpenAL开源代码分析">
+<meta property="og:url" content="http://timlyeee.github.io/2022/04/24/openal-research-for-recent-macosx/index.html">
+<meta property="og:site_name" content="timlyeee.github.io">
+<meta property="og:description" content="最近工作上对于音频有一些issue需要处理，但是OpenAL的文档相当模糊，也鲜有StackOverflow的回答，无奈之下我决定依据Apple最新的OpenAL开源代码做一些调查分析。 最主要的关注点就是alSourcePlay接口的源码分析和状态分析。 OpenAL 简单概念介绍我们先抛开一切冗杂的前奏，直接从接口介绍几个必须了解的参数，以及为什么我们要关注它们。 AL_SOURCE_STAT">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2022-04-24T05:53:05.000Z">
+<meta property="article:modified_time" content="2023-01-05T12:56:11.065Z">
+<meta property="article:author" content="timlyeee">
+<meta name="twitter:card" content="summary">
+  
+    <link rel="alternate" href="../../../../atom.xml" title="timlyeee.github.io" type="application/atom+xml">
+  
+  
+    <link rel="shortcut icon" href="../../../../favicon.ico">
+  
+  
+<link rel="stylesheet" href="../css/typing.css">
+
+  
+<link rel="stylesheet" href="../css/donate.css">
+
+  
+  
+    
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@3/dist/jquery.fancybox.min.css">
+
+  
+<meta name="generator" content="Hexo 6.1.0"></head>
+
+  
+    
+      <body>
+    
+  
+      <div id="container" class="container">
+        <article id="post-openal-research-for-recent-macosx" class="h-entry article article-type-post" itemprop="blogPost" itemscope itemtype="https://schema.org/BlogPosting">
+  <header id="header" class="header">
+  <nav class="mobile-nav">
+    <h1 class="nickname">Tim Lee</h1>
+    <ul class="mobile-nav-menu">
+      <label for="mobile-menu-toggle"><a id="menu-button">&#9776; Menu</a></label>
+      <input type="checkbox" id="mobile-menu-toggle"/>
+      <ul class="mobile-nav-link">
+        
+        <a href="../index.html">Home</a>
+        
+        <a href="../archives">Archives</a>
+        
+        <a href="../about">About</a>
+        
+      </ul>
+    </ul>
+  </nav>
+	
+		<nav id="main-nav" class="main-nav">
+	
+	
+	  <a class="main-nav-link" href="../index.html">Home</a>
+	
+	  <a class="main-nav-link" href="../archives">Archives</a>
+	
+	  <a class="main-nav-link" href="../about">About</a>
+	
+  </nav>
+</header>
+
+  <hr/>
+  <div class="article-inner">
+    
+
+    
+      <header class="article-header">
+        
+  
+    <h1 class="p-name article-title" itemprop="headline name">
+      MacOSX上的OpenAL开源代码分析
+    </h1>
+  
+
+      </header>
+    
+    <div class="e-content article-entry typo" itemprop="articleBody">
+      
+        <p>最近工作上对于音频有一些issue需要处理，但是OpenAL的文档相当模糊，也鲜有StackOverflow的回答，无奈之下我决定依据Apple最新的<a target="_blank" rel="noopener" href="https://opensource.apple.com/tarballs/OpenAL/">OpenAL开源代码</a>做一些调查分析。</p>
+<p>最主要的关注点就是<code>alSourcePlay</code>接口的源码分析和状态分析。</p>
+<h2 id="OpenAL-简单概念介绍"><a href="#OpenAL-简单概念介绍" class="headerlink" title="OpenAL 简单概念介绍"></a>OpenAL 简单概念介绍</h2><p>我们先抛开一切冗杂的前奏，直接从接口介绍几个必须了解的参数，以及为什么我们要关注它们。</p>
+<h3 id="AL-SOURCE-STATE-音频播放状态"><a href="#AL-SOURCE-STATE-音频播放状态" class="headerlink" title="AL_SOURCE_STATE 音频播放状态"></a>AL_SOURCE_STATE 音频播放状态</h3><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * Source state information.</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="meta">#<span class="keyword">define</span> AL_SOURCE_STATE                           0x1010</span></span><br><span class="line"><span class="meta">#<span class="keyword">define</span> AL_INITIAL                                0x1011</span></span><br><span class="line"><span class="meta">#<span class="keyword">define</span> AL_PLAYING                                0x1012</span></span><br><span class="line"><span class="meta">#<span class="keyword">define</span> AL_PAUSED                                 0x1013</span></span><br><span class="line"><span class="meta">#<span class="keyword">define</span> AL_STOPPED                                0x1014</span></span><br></pre></td></tr></table></figure>
+
+<p>音频的状态被记录在<code>alSource</code>相关的结构体中，几百年没动过，这对应了音频的播放状态，在调用<code>alSourcePlay</code>之后就会进行相应的变化。当然，其他的播放控制函数也会同步调整它。如<code>alSourceStop</code>，<code>alSourcePause</code>等。</p>
+<h3 id="alSource-音频ID"><a href="#alSource-音频ID" class="headerlink" title="alSource 音频ID"></a>alSource 音频ID</h3><p>音频会作为一个结构存储起来，并返回一个<code>alSourceID</code>作为它的索引，由于ID往往是唯一的，所以<code>alSourceID</code>也被简写为<code>alSource</code>或者<code>sid</code>。基本上所有的API接口都不会直接操作结构体，而是通过传输sid完成。</p>
+<h3 id="ALContext-AL上下文"><a href="#ALContext-AL上下文" class="headerlink" title="ALContext AL上下文"></a>ALContext AL上下文</h3><p>OpenAL是模仿OpenGL风格写的库，所以音频的播放载体被称为<code>ALContext</code>，也就是上下文，用来表明音频播放的环境及变量。上下文则依赖一个Device，就是播放设备。</p>
+<p><code>ALContext</code>可以由开发者自己创建，相关的接口都包含在alc.h的头文件中。不过alc的意思就是alcontext。</p>
+<h3 id="ALDevice-AL播放设备"><a href="#ALDevice-AL播放设备" class="headerlink" title="ALDevice AL播放设备"></a>ALDevice AL播放设备</h3><p>也是一个标识符，目前不是关注的重点。</p>
+<h2 id="alSourcePlay的源码分析"><a href="#alSourcePlay的源码分析" class="headerlink" title="alSourcePlay的源码分析"></a>alSourcePlay的源码分析</h2><p>对外的API中，<code>alSourcePlay</code>无返回值，如果有错误则会放在统一的alError中</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="keyword">ifndef</span> OPENAL_DEPRECATED</span></span><br><span class="line"><span class="meta">#<span class="keyword">define</span> OPENAL_DEPRECATED API_DEPRECATED(<span class="string">&quot;OpenAL is deprecated in favor of AVAudioEngine&quot;</span>, macos(10.4, 10.15), ios(2.0, 13.0))</span></span><br><span class="line"><span class="meta">#<span class="keyword">endif</span> <span class="comment">// OPENAL_DEPRECATED</span></span></span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="function">AL_API <span class="type">void</span> AL_APIENTRY <span class="title">alSourcePlay</span><span class="params">( ALuint sid )</span> OPENAL_DEPRECATED</span>;</span><br></pre></td></tr></table></figure>
+
+<h3 id="源码流程解析"><a href="#源码流程解析" class="headerlink" title="源码流程解析"></a>源码流程解析</h3><p>在新版本的OpenAL源码中，<code>alSourcePlay</code>的实现则被放到了<code>oalImp.cpp</code>中。下面是源码。</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~</span></span><br><span class="line"><span class="function">AL_API ALvoid AL_APIENTRY <span class="title">alSourcePlay</span><span class="params">(ALuint sid)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line"><span class="meta">#<span class="keyword">if</span> LOG_SOURCE_USAGE</span></span><br><span class="line"> <span class="built_in">DebugMessageN1</span>(<span class="string">&quot;alSourcePlay--&gt; source %ld&quot;</span>, (<span class="type">long</span> <span class="type">int</span>) sid);</span><br><span class="line"><span class="meta">#<span class="keyword">endif</span></span></span><br><span class="line"></span><br><span class="line"> OALSource *oalSource = <span class="literal">NULL</span>;</span><br><span class="line"> <span class="keyword">try</span> &#123;</span><br><span class="line">  oalSource = <span class="built_in">ProtectSourceObjectInCurrentContext</span>(sid);</span><br><span class="line">  oalSource-&gt;<span class="built_in">Play</span>();     <span class="comment">// start playing the queue</span></span><br><span class="line"> &#125;</span><br><span class="line"> <span class="built_in">catch</span> (OSStatus      result) &#123;</span><br><span class="line">  <span class="built_in">DebugMessageN1</span>(<span class="string">&quot;ERROR: alSourcePlay FAILED = %s\n&quot;</span>, <span class="built_in">alGetString</span>(result));</span><br><span class="line">  <span class="built_in">alSetError</span>(result);</span><br><span class="line"> &#125;</span><br><span class="line"> <span class="built_in">catch</span> (...) &#123; <span class="comment">// Catch-all handler, which is activated for any exception * https://en.cppreference.com/w/cpp/language/try_catch</span></span><br><span class="line">  <span class="built_in">DebugMessage</span>(<span class="string">&quot;ERROR: alSourcePlay FAILED&quot;</span>);</span><br><span class="line">  <span class="built_in">alSetError</span>(AL_INVALID_OPERATION);</span><br><span class="line"> &#125;</span><br><span class="line"> </span><br><span class="line"> <span class="built_in">ReleaseSourceObject</span>(oalSource);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>可以看到其实播放的流程其实分为两个部分：</p>
+<ol>
+<li>获取id对应的<code>OALSource</code>对象。</li>
+<li>使用try-catch尝试播放<code>OALSource</code>，如果失败则设置<code>alError</code>。</li>
+</ol>
+<p>获取<code>OALSource</code>对象则需要检测<code>ALContext</code>的合法性。</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// globals</span></span><br><span class="line"><span class="type">uintptr_t</span> gCurrentContext = <span class="number">0</span>;                                    <span class="comment">// token for the current context</span></span><br><span class="line"><span class="function">OALSource* <span class="title">ProtectSourceObjectInCurrentContext</span><span class="params">(ALuint inSID)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line"> OALContext *oalContext = <span class="literal">NULL</span>;</span><br><span class="line"> OALSource *oalSource = <span class="literal">NULL</span>;</span><br><span class="line"> </span><br><span class="line"> <span class="keyword">try</span> &#123;</span><br><span class="line">  oalContext = <span class="built_in">ProtectContextObject</span>(gCurrentContext);</span><br><span class="line">  oalSource = oalContext-&gt;<span class="built_in">ProtectSource</span>(inSID);</span><br><span class="line">  <span class="keyword">if</span> (oalSource == <span class="literal">NULL</span>)</span><br><span class="line">   <span class="keyword">throw</span> ((OSStatus) AL_INVALID_NAME);  <span class="comment">// per OpenAL 1.1 spec</span></span><br><span class="line"></span><br><span class="line">  <span class="built_in">ReleaseContextObject</span>(oalContext);</span><br><span class="line"> &#125; </span><br><span class="line"> <span class="built_in">catch</span> (OSStatus stat) &#123;</span><br><span class="line">  <span class="built_in">ReleaseContextObject</span>(oalContext);</span><br><span class="line">  <span class="keyword">throw</span> stat;</span><br><span class="line"> &#125; </span><br><span class="line"> <span class="built_in">catch</span> (...) &#123;</span><br><span class="line">  <span class="built_in">ReleaseContextObject</span>(oalContext);</span><br><span class="line">  <span class="keyword">throw</span> <span class="number">-1</span>;</span><br><span class="line"> &#125;</span><br><span class="line"> </span><br><span class="line"> <span class="keyword">return</span> oalSource;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>在oalImp中，<code>gCurrentContext</code>用uintptr代替本身的指针。这是为了兼容不同版本的API同时能够进行结构性调整。通过在这个<code>ALContext</code>中查找id所对应的<code>OALSource</code>，来获取到具体的对象。如果找不到，则抛出异常，并释放<code>ALContext</code>。这里的释放是通过将其InUseFlag清除。此处不深究。</p>
+<p>顺利获取到音频之后，将调用其play函数。</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br><span class="line">99</span><br><span class="line">100</span><br><span class="line">101</span><br><span class="line">102</span><br><span class="line">103</span><br><span class="line">104</span><br><span class="line">105</span><br><span class="line">106</span><br><span class="line">107</span><br><span class="line">108</span><br><span class="line">109</span><br><span class="line">110</span><br><span class="line">111</span><br><span class="line">112</span><br><span class="line">113</span><br><span class="line">114</span><br><span class="line">115</span><br><span class="line">116</span><br><span class="line">117</span><br><span class="line">118</span><br><span class="line">119</span><br><span class="line">120</span><br><span class="line">121</span><br><span class="line">122</span><br><span class="line">123</span><br><span class="line">124</span><br><span class="line">125</span><br><span class="line">126</span><br><span class="line">127</span><br><span class="line">128</span><br><span class="line">129</span><br><span class="line">130</span><br><span class="line">131</span><br><span class="line">132</span><br><span class="line">133</span><br><span class="line">134</span><br><span class="line">135</span><br><span class="line">136</span><br><span class="line">137</span><br><span class="line">138</span><br><span class="line">139</span><br><span class="line">140</span><br><span class="line">141</span><br><span class="line">142</span><br><span class="line">143</span><br><span class="line">144</span><br><span class="line">145</span><br><span class="line">146</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="type">void</span> <span class="title">OALSource::Play</span><span class="params">()</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line"><span class="meta">#<span class="keyword">if</span> LOG_VERBOSE</span></span><br><span class="line"> <span class="built_in">DebugMessageN1</span>(<span class="string">&quot;OALSource::Play called - OALSource = %ld\n&quot;</span>, (<span class="type">long</span> <span class="type">int</span>) mSelfToken);</span><br><span class="line"><span class="meta">#<span class="keyword">endif</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">if</span> LOG_PLAYBACK</span></span><br><span class="line"> <span class="built_in">DebugMessageN2</span>(<span class="string">&quot;OALSource::Play called - OALSource:mState = %ld:%ld\n&quot;</span>, (<span class="type">long</span> <span class="type">int</span>) mSelfToken, mState);</span><br><span class="line"><span class="meta">#<span class="keyword">endif</span></span></span><br><span class="line"> <span class="keyword">try</span> &#123;</span><br><span class="line">  <span class="comment">// wait if in render, then prevent rendering til completion</span></span><br><span class="line">  <span class="function">OALRenderLocker::RenderLocker <span class="title">locked</span><span class="params">(mRenderLocker, InRenderThread())</span></span>;</span><br><span class="line"></span><br><span class="line">  <span class="comment">// don&#x27;t allow synchronous source manipulation</span></span><br><span class="line">  <span class="function">CAGuard::Locker <span class="title">sourceLock</span><span class="params">(mSourceLock)</span></span>;</span><br><span class="line"></span><br><span class="line">  <span class="keyword">if</span> (<span class="built_in">GetQLengthPriv</span>() == <span class="number">0</span>)</span><br><span class="line">   <span class="keyword">return</span>; <span class="comment">// nothing to do</span></span><br><span class="line">        </span><br><span class="line">  <span class="keyword">switch</span> (mState)</span><br><span class="line">  &#123;</span><br><span class="line">   <span class="keyword">case</span> AL_PLAYING:</span><br><span class="line">   <span class="keyword">case</span> kTransitionToPlay:</span><br><span class="line">   <span class="keyword">case</span> kTransitionToResume:</span><br><span class="line">   <span class="keyword">case</span> kTransitionToRetrigger:</span><br><span class="line">    <span class="keyword">if</span> (mRampState != kRampingComplete) </span><br><span class="line">    &#123;</span><br><span class="line">     mRampState = kRampDown;</span><br><span class="line"><span class="meta">#<span class="keyword">if</span> LOG_MESSAGE_QUEUE     </span></span><br><span class="line">     <span class="built_in">DebugMessageN1</span>(<span class="string">&quot;OALSource::Play (AL_PLAYING state)  - kMQ_Retrigger added to MQ - OALSource = %ld&quot;</span>, (<span class="type">long</span> <span class="type">int</span>) mSelfToken);</span><br><span class="line"><span class="meta">#<span class="keyword">endif</span></span></span><br><span class="line">     <span class="built_in">AddPlaybackMessage</span>(kMQ_Retrigger, <span class="literal">NULL</span>, <span class="number">0</span>);</span><br><span class="line">     <span class="built_in">SetPlaybackState</span>(kTransitionToRetrigger);</span><br><span class="line">     &#125;</span><br><span class="line">    <span class="keyword">break</span>;</span><br><span class="line">   </span><br><span class="line">   <span class="keyword">case</span> AL_PAUSED:</span><br><span class="line">    <span class="built_in">Resume</span>();</span><br><span class="line">    <span class="keyword">break</span>;</span><br><span class="line">   </span><br><span class="line">   <span class="keyword">case</span> kTransitionToPause:</span><br><span class="line"><span class="meta">#<span class="keyword">if</span> LOG_MESSAGE_QUEUE     </span></span><br><span class="line">                <span class="built_in">DebugMessageN1</span>(<span class="string">&quot;OALSource::Play (kTransitionToPause state)  - kMQ_Resume added to MQ - OALSource = %ld&quot;</span>, (<span class="type">long</span> <span class="type">int</span>) mSelfToken);</span><br><span class="line"><span class="meta">#<span class="keyword">endif</span></span></span><br><span class="line">    <span class="built_in">AddPlaybackMessage</span>((UInt32) kMQ_Resume, <span class="literal">NULL</span>, <span class="number">0</span>);</span><br><span class="line">    <span class="built_in">SetPlaybackState</span>(kTransitionToResume);</span><br><span class="line">    <span class="keyword">break</span>;</span><br><span class="line">    </span><br><span class="line">   <span class="keyword">case</span> kTransitionToStop:</span><br><span class="line">   <span class="keyword">case</span> kTransitionToRewind:</span><br><span class="line">    <span class="keyword">if</span> (mRampState != kRampingComplete)</span><br><span class="line">    &#123;</span><br><span class="line">     mRampState = kRampDown;</span><br><span class="line"><span class="meta">#<span class="keyword">if</span> LOG_MESSAGE_QUEUE     </span></span><br><span class="line">     <span class="built_in">DebugMessageN1</span>(<span class="string">&quot;OALSource::Play (kTransitionToStop/kTransitionToRewind state)  - kMQ_Play added to MQ - OALSource = %ld&quot;</span>, (<span class="type">long</span> <span class="type">int</span>) mSelfToken);</span><br><span class="line"><span class="meta">#<span class="keyword">endif</span></span></span><br><span class="line">     <span class="built_in">AddPlaybackMessage</span>(kMQ_Play, <span class="literal">NULL</span>, <span class="number">0</span>);</span><br><span class="line">     <span class="built_in">SetPlaybackState</span>(kTransitionToPlay);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">break</span>;</span><br><span class="line">   </span><br><span class="line">   <span class="keyword">default</span>:</span><br><span class="line">   &#123;        </span><br><span class="line">    <span class="comment">// get the buffer q in a ready state for playback</span></span><br><span class="line">    <span class="built_in">PrepBufferQueueForPlayback</span>(); </span><br><span class="line">    </span><br><span class="line">    <span class="comment">// set up a mixer bus now</span></span><br><span class="line">    <span class="built_in">SetupMixerBus</span>();</span><br><span class="line">    CAStreamBasicDescription format;</span><br><span class="line">    UInt32                      propSize = <span class="built_in">sizeof</span>(format);</span><br><span class="line">    OSStatus result = noErr;</span><br><span class="line">    </span><br><span class="line">    <span class="keyword">if</span>(mASARogerBeepEnable || mASADistortionEnable)</span><br><span class="line">    &#123; </span><br><span class="line">     mRenderElement = <span class="number">0</span>;</span><br><span class="line">     result = <span class="built_in">AudioUnitGetProperty</span>(mOwningContext-&gt;<span class="built_in">GetMixerUnit</span>(), kAudioUnitProperty_StreamFormat, kAudioUnitScope_Input, mCurrentPlayBus, &amp;format, &amp;propSize);</span><br><span class="line">      <span class="function">THROW_RESULT </span></span><br><span class="line"><span class="function">        </span></span><br><span class="line"><span class="function">     <span class="title">if</span><span class="params">(mASARogerBeepEnable)</span></span></span><br><span class="line"><span class="function">     </span>&#123;</span><br><span class="line">      <span class="comment">// set AU format to mixer format for input/output</span></span><br><span class="line">      result = <span class="built_in">AudioUnitSetProperty</span> (mRogerBeepAU, kAudioUnitProperty_StreamFormat, kAudioUnitScope_Output, <span class="number">0</span>, &amp;format, <span class="built_in">sizeof</span>(format));</span><br><span class="line">       THROW_RESULT</span><br><span class="line">      result = <span class="built_in">AudioUnitSetProperty</span> (mRogerBeepAU, kAudioUnitProperty_StreamFormat, kAudioUnitScope_Input, <span class="number">0</span>, &amp;format, <span class="built_in">sizeof</span>(format));</span><br><span class="line">       THROW_RESULT</span><br><span class="line">      result = <span class="built_in">AudioUnitInitialize</span>(mRogerBeepAU);</span><br><span class="line">       THROW_RESULT</span><br><span class="line">      <span class="comment">// connect roger beep AU to 3D Mixer</span></span><br><span class="line">      result = <span class="built_in">AUGraphConnectNodeInput</span>(mOwningContext-&gt;<span class="built_in">GetGraph</span>(), mRogerBeepNode, <span class="number">0</span>, mOwningContext-&gt;<span class="built_in">GetMixerNode</span>(), mCurrentPlayBus);</span><br><span class="line">       <span class="function">THROW_RESULT </span></span><br><span class="line"><span class="function">      </span></span><br><span class="line"><span class="function">      <span class="title">if</span><span class="params">(!mASADistortionEnable)</span></span></span><br><span class="line"><span class="function">      </span>&#123;</span><br><span class="line">       <span class="comment">// connect render proc to unit if distortion is not enabled</span></span><br><span class="line">       result = <span class="built_in">AUGraphNodeInfo</span> (mOwningContext-&gt;<span class="built_in">GetGraph</span>(), mRogerBeepNode, <span class="literal">NULL</span>, &amp;mRenderUnit);</span><br><span class="line">        THROW_RESULT;</span><br><span class="line">      &#125;</span><br><span class="line">     &#125;</span><br><span class="line">     </span><br><span class="line">     <span class="keyword">if</span>(mASADistortionEnable)</span><br><span class="line">     &#123;</span><br><span class="line"></span><br><span class="line">      <span class="comment">// set AU format to mixer format for input/output</span></span><br><span class="line">      result = <span class="built_in">AudioUnitSetProperty</span> (mDistortionAU, kAudioUnitProperty_StreamFormat, kAudioUnitScope_Output, <span class="number">0</span>, &amp;format, <span class="built_in">sizeof</span>(format));</span><br><span class="line">       THROW_RESULT</span><br><span class="line">      result = <span class="built_in">AudioUnitSetProperty</span> (mDistortionAU, kAudioUnitProperty_StreamFormat, kAudioUnitScope_Input, <span class="number">0</span>, &amp;format, <span class="built_in">sizeof</span>(format));</span><br><span class="line">       THROW_RESULT</span><br><span class="line">      result = <span class="built_in">AudioUnitInitialize</span>(mDistortionAU);</span><br><span class="line">       THROW_RESULT</span><br><span class="line">      </span><br><span class="line">      <span class="comment">// distortion unit will always be first if it exists</span></span><br><span class="line">      result = <span class="built_in">AUGraphNodeInfo</span> (mOwningContext-&gt;<span class="built_in">GetGraph</span>(), mDistortionNode, <span class="literal">NULL</span>, &amp;mRenderUnit);</span><br><span class="line">       <span class="function">THROW_RESULT</span></span><br><span class="line"><span class="function">      </span></span><br><span class="line"><span class="function">      <span class="title">if</span><span class="params">(mASARogerBeepEnable)</span></span></span><br><span class="line"><span class="function">       result </span>= <span class="built_in">AUGraphConnectNodeInput</span>(mOwningContext-&gt;<span class="built_in">GetGraph</span>(), mDistortionNode, <span class="number">0</span>, mRogerBeepNode, <span class="number">0</span>);</span><br><span class="line">      <span class="keyword">else</span></span><br><span class="line">       result = <span class="built_in">AUGraphConnectNodeInput</span>(mOwningContext-&gt;<span class="built_in">GetGraph</span>(), mDistortionNode, <span class="number">0</span>, mOwningContext-&gt;<span class="built_in">GetMixerNode</span>(), mCurrentPlayBus);</span><br><span class="line">        </span><br><span class="line">       THROW_RESULT</span><br><span class="line">     &#125;</span><br><span class="line">     </span><br><span class="line">     result = <span class="built_in">AUGraphUpdate</span>(mOwningContext-&gt;<span class="built_in">GetGraph</span>(), <span class="literal">NULL</span>);</span><br><span class="line">      THROW_RESULT</span><br><span class="line">    &#125; </span><br><span class="line">    <span class="keyword">else</span></span><br><span class="line">    &#123;</span><br><span class="line">     mRenderUnit = mOwningContext-&gt;<span class="built_in">GetMixerUnit</span>();</span><br><span class="line">     mRenderElement = mCurrentPlayBus;</span><br><span class="line">    &#125;</span><br><span class="line">     <span class="function">THROW_RESULT</span></span><br><span class="line"><span class="function">    </span></span><br><span class="line"><span class="function">    <span class="title">SetPlaybackState</span><span class="params">(AL_PLAYING,<span class="literal">true</span>)</span></span>;</span><br><span class="line">    <span class="keyword">if</span> (mRampState != kRampingComplete)</span><br><span class="line">        mRampState = kRampUp;</span><br><span class="line">    mResetBus = <span class="literal">true</span>;</span><br><span class="line">    mQueueIsProcessed = <span class="literal">false</span>;</span><br><span class="line">    <span class="comment">// attach the notify and render procs to the first unit in the sequence</span></span><br><span class="line">    <span class="built_in">AddNotifyAndRenderProcs</span>();</span><br><span class="line">   &#125;</span><br><span class="line">  &#125;</span><br><span class="line"> &#125;</span><br><span class="line"> <span class="built_in">catch</span> (OSStatus result) &#123;</span><br><span class="line">  <span class="built_in">DebugMessageN2</span>(<span class="string">&quot;PLAY FAILED source = %ld, err = %ld\n&quot;</span>, (<span class="type">long</span> <span class="type">int</span>) mSelfToken, (<span class="type">long</span> <span class="type">int</span>)result);</span><br><span class="line">  <span class="keyword">throw</span> (result);</span><br><span class="line"> &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>play的阶段可以分三步</p>
+<ol>
+<li>确认Render状态，如果在rendering就上锁。</li>
+<li>确认长度，如果为0则直接返回</li>
+<li>根据当前播放状态设置所需的内部状态。</li>
+</ol>
+<p>尽管对外的播放状态只有4种，但是实际的内部状态有许多种。Play函数将根据不同的初始状态统合成预想状态，然后在render处理时根据对应状态执行音频播放。</p>
+<p>所以这里涉及到新版OpenAL中一个重大变化，播放逻辑的统一处理：在正常的<code>AUGraphUpdate</code>中对所有需要render的音频做render处理。如果查看旧版本的OpenAL源码的话会发现它其实是一步处理的。</p>
+<h3 id="可能的崩溃点"><a href="#可能的崩溃点" class="headerlink" title="可能的崩溃点"></a>可能的崩溃点</h3><p>在大多数情况下，try-catch会帮我们把alError给暴露出来，但是有许多情况实际上是没有执行play-render逻辑的。在这里我需要梳理一下情况。</p>
+<ol>
+<li><code>GetQLengthPriv = 0</code>时，不会做任何处理，直接返回，这时候状态不会做任何改变，也不会播放。</li>
+<li><code>AddPlaybackMessage</code>存在消息队列中，并且 MessageQ 和运行状态不同步。</li>
+<li><code>PrepBufferQueueForPlayback</code>只会返回bool状态，但是这里并没有做判断，所以并不清楚bufferq的状态</li>
+<li><code>SetupMixerBus</code>没有做判断，并不能从这里判断mixer的状态。</li>
+</ol>
+<p>在这些情况下，音频的状态并不会从<code>AL_STOPPED</code>转为播放状态。</p>
+
+      
+      
+    </div>
+    <footer class="article-footer">
+      <ul class="article-meta">
+        <li>
+          <span class="label">Published Date:</span>
+          <a href="" class="article-date">
+  <time class="dt-published" datetime="2022-04-24T05:53:05.000Z" itemprop="datePublished">2022-04-24</time>
+</a>
+
+        </li>
+        
+        
+        <hr/>
+      </ul>
+    </footer>
+  </div>
+  
+    
+<nav id="article-nav" class="article-nav">
+  
+    <a href="../../../05/04/hackUrTheme/" id="article-nav-newer" class="article-nav-link-wrap newer">
+      <strong class="article-nav-caption">Newer</strong>
+      <div class="article-nav-title">
+        
+          我只想 定制个人专属的 Hexo 主题
+        
+      </div>
+    </a>
+  
+  
+    <a href="../apache2ServerOnMacOSX/" id="article-nav-older" class="article-nav-link-wrap older">
+      <strong class="article-nav-caption">Older</strong>
+      <div class="article-nav-title">在MacOSX上搭建本地测试服务器的踩坑</div>
+    </a>
+  
+</nav>
+
+
+  
+</article>
+
+
+
+
+
+
+
+
+
+
+      </div>
+      
+    <footer id="footer" class="post-footer footer">
+      
+      <hr/>
+      <div id="footerContent" class="footer-content">
+        <p>Post</p>
+
+
+      </div>
+    </footer>
+
+      
+
+
+
+
+
+
+
+
+<script src="https://cdn.jsdelivr.net/npm/jquery@3/dist/jquery.min.js"></script>
+
+
+<script src="https://cdn.jsdelivr.net/npm/clipboard@2/dist/clipboard.min.js"></script>
+
+
+
+  
+<script src="https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@3/dist/jquery.fancybox.min.js"></script>
+
+
+
+
+<script src="../js/typing.js"></script>
+
+<!--[if lt IE 9]>
+<script src="https://cdn.jsdelivr.net/npm/html5shiv@3/dist/html5shiv.min.js"></script>
+<![endif]-->
+
+
+
+
+
+
+
+    </div>
+  </body>
+</html>

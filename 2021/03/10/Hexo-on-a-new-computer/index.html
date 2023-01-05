@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  
+  <title>记录本博客的第一次迁移 | timlyeee.github.io</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <meta name="description" content="迁移的目的我现在大多数时间都是在用windows系统的这台电脑，所以原本的码字用的mac逐渐被我舍弃。之前的博客也需要被迁移。虽然这么说，但是我其实没有那么多文章在这个博客上。 这是我第一次迁移，算是一个踩坑的过程和指令的熟练过程">
+<meta property="og:type" content="article">
+<meta property="og:title" content="记录本博客的第一次迁移">
+<meta property="og:url" content="http://timlyeee.github.io/2021/03/10/Hexo-on-a-new-computer/index.html">
+<meta property="og:site_name" content="timlyeee.github.io">
+<meta property="og:description" content="迁移的目的我现在大多数时间都是在用windows系统的这台电脑，所以原本的码字用的mac逐渐被我舍弃。之前的博客也需要被迁移。虽然这么说，但是我其实没有那么多文章在这个博客上。 这是我第一次迁移，算是一个踩坑的过程和指令的熟练过程">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2021-03-10T15:57:31.000Z">
+<meta property="article:modified_time" content="2023-01-05T12:56:11.061Z">
+<meta property="article:author" content="timlyeee">
+<meta name="twitter:card" content="summary">
+  
+    <link rel="alternate" href="../../../../atom.xml" title="timlyeee.github.io" type="application/atom+xml">
+  
+  
+    <link rel="shortcut icon" href="../../../../favicon.ico">
+  
+  
+<link rel="stylesheet" href="../css/typing.css">
+
+  
+<link rel="stylesheet" href="../css/donate.css">
+
+  
+  
+    
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@3/dist/jquery.fancybox.min.css">
+
+  
+<meta name="generator" content="Hexo 6.1.0"></head>
+
+  
+    
+      <body>
+    
+  
+      <div id="container" class="container">
+        <article id="post-Hexo-on-a-new-computer" class="h-entry article article-type-post" itemprop="blogPost" itemscope itemtype="https://schema.org/BlogPosting">
+  <header id="header" class="header">
+  <nav class="mobile-nav">
+    <h1 class="nickname">Tim Lee</h1>
+    <ul class="mobile-nav-menu">
+      <label for="mobile-menu-toggle"><a id="menu-button">&#9776; Menu</a></label>
+      <input type="checkbox" id="mobile-menu-toggle"/>
+      <ul class="mobile-nav-link">
+        
+        <a href="../index.html">Home</a>
+        
+        <a href="../archives">Archives</a>
+        
+        <a href="../about">About</a>
+        
+      </ul>
+    </ul>
+  </nav>
+	
+		<nav id="main-nav" class="main-nav">
+	
+	
+	  <a class="main-nav-link" href="../index.html">Home</a>
+	
+	  <a class="main-nav-link" href="../archives">Archives</a>
+	
+	  <a class="main-nav-link" href="../about">About</a>
+	
+  </nav>
+</header>
+
+  <hr/>
+  <div class="article-inner">
+    
+
+    
+      <header class="article-header">
+        
+  
+    <h1 class="p-name article-title" itemprop="headline name">
+      记录本博客的第一次迁移
+    </h1>
+  
+
+      </header>
+    
+    <div class="e-content article-entry typo" itemprop="articleBody">
+      
+        <h2 id="迁移的目的"><a href="#迁移的目的" class="headerlink" title="迁移的目的"></a>迁移的目的</h2><p>我现在大多数时间都是在用windows系统的这台电脑，所以原本的码字用的mac逐渐被我舍弃。之前的博客也需要被迁移。虽然这么说，但是我其实没有那么多文章在这个博客上。</p>
+<p>这是我第一次迁移，算是一个踩坑的过程和指令的熟练过程</p>
+<span id="more"></span>
+
+<h2 id="基本工作"><a href="#基本工作" class="headerlink" title="基本工作"></a>基本工作</h2><p>这个系统本身就有NodeJS存在，所以我不需要从头开始装Node，但是原本npm都是在国外下载的，所以回国之后需要安装一下淘宝镜像</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">npm install -g cnpm --registry=https://registry.npm.taobao.org</span><br></pre></td></tr></table></figure>
+<p>接下来就是直接把原本的所有内容拷贝到这台电脑上，这取决于用了多少包和文章。不过说实话，用RSS下载的时间和用U盘拷贝的时间我更偏向后者。有这么快的传输速度为什么不用？</p>
+<p>拷贝之后需要更新一下包。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">npm install </span><br><span class="line">//或者fix用来校对一下版本</span><br><span class="line">npm audit fix</span><br></pre></td></tr></table></figure>
+
+<p>然后以防万一，安装一下全局hexo-cli</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">npm install hexo-cli -g</span><br></pre></td></tr></table></figure>
+
+<p>做到这一步我们可以开始测试hexo的各项功能。</p>
+<h2 id="本地服务器"><a href="#本地服务器" class="headerlink" title="本地服务器"></a>本地服务器</h2><p>首先是Hexo server，这一步对我来说是OK的，本地服务器能够完美运行。</p>
+<p>但是Hexo new并不能正常运行，</p>
+<blockquote>
+<p>报错：ERROR Plugin load failed: hexo-renderer-sass</p>
+</blockquote>
+<p>这是用来将sass语言转换为css语言的项目依赖。实际上我在第一次实习的时候有接触过。但是用的不多。查找之后， 发现只需要重装就行。</p>
+<p>其实在这一步的时候我是没有安装淘宝镜像的，所以报了另外一个错误。</p>
+<blockquote>
+<p>“Unexpected end of JSON input while parsing near···”</p>
+</blockquote>
+<p>这是因为我在之前install各项内容时，并没有找到所有的源地址，从而导致了写入Json文件时错误。因为仔细观察这个错误会发现是package-lock.json文件中错误。</p>
+<p>所以我重新清理了缓存并且卸载重装了node-sass包。</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">npm cache clean --force</span><br><span class="line"><span class="meta prompt_">&gt;</span><span class="language-bash">&gt;npm WARN using --force I sure hope you know what you are doing.</span></span><br><span class="line">cnpm install node-sass</span><br></pre></td></tr></table></figure>
+
+<p>至此，就可以使用hexo new命令了。</p>
+<h2 id="deployment"><a href="#deployment" class="headerlink" title="deployment"></a>deployment</h2><p>和Mac上一样，如果需要只用hexo deploy命令就将新的内容部署到博客上，只需要将本机的ssh绑定到github上就行。至此，所有步骤都顺利完成了。也就有了这篇博文。</p>
+<p>关于ssh的获取和赋值方法，网上搜搜就知道了。</p>
+<hr>
+<p>我已经好久没有登录我的博客了，以至于我都快忘了自己当初立下的誓言。总感觉我的冲劲正在一点点的被消磨耗尽。但今天笔试乐狗科技让我意识到，要是连工都没得打的话，那岂不是连冲出去的机会都没有了？冲劲又往哪里去放呢？</p>
+<p>这样想着，我还是决定把东西记录下来，至少这次春招会让我学到很多东西。我没有参加秋招，等于我失去了一次机会，如果没有成功通过这些笔试和面试，那么，我就只能去做社会招聘？或者继续蹭下一届的校园招聘，那我就离自己的游戏开发的梦想越来越远了。</p>
+<p>也是这样想着，又苦于自己的法语还没考过，如果4月9日的考试还是没法考到B2的话，自己的人生又要往后拖了。我今年24，离30岁并不远了。这些压力似乎在逼着我热爱上编程这个职业，让我爱上努力这件事。明明我是很懒的一个人。</p>
+
+      
+      
+    </div>
+    <footer class="article-footer">
+      <ul class="article-meta">
+        <li>
+          <span class="label">Published Date:</span>
+          <a href="" class="article-date">
+  <time class="dt-published" datetime="2021-03-10T15:57:31.000Z" itemprop="datePublished">2021-03-10</time>
+</a>
+
+        </li>
+        
+        
+        <hr/>
+      </ul>
+    </footer>
+  </div>
+  
+    
+<nav id="article-nav" class="article-nav">
+  
+    <a href="../../11/locks-1/" id="article-nav-newer" class="article-nav-link-wrap newer">
+      <strong class="article-nav-caption">Newer</strong>
+      <div class="article-nav-title">
+        
+          同步，互斥，阻塞
+        
+      </div>
+    </a>
+  
+  
+    <a href="../../../../2020/09/28/c-Reference/" id="article-nav-older" class="article-nav-link-wrap older">
+      <strong class="article-nav-caption">Older</strong>
+      <div class="article-nav-title">c++Reference</div>
+    </a>
+  
+</nav>
+
+
+  
+</article>
+
+
+
+
+
+
+
+
+
+
+      </div>
+      
+    <footer id="footer" class="post-footer footer">
+      
+      <hr/>
+      <div id="footerContent" class="footer-content">
+        <p>Post</p>
+
+
+      </div>
+    </footer>
+
+      
+
+
+
+
+
+
+
+
+<script src="https://cdn.jsdelivr.net/npm/jquery@3/dist/jquery.min.js"></script>
+
+
+<script src="https://cdn.jsdelivr.net/npm/clipboard@2/dist/clipboard.min.js"></script>
+
+
+
+  
+<script src="https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@3/dist/jquery.fancybox.min.js"></script>
+
+
+
+
+<script src="../js/typing.js"></script>
+
+<!--[if lt IE 9]>
+<script src="https://cdn.jsdelivr.net/npm/html5shiv@3/dist/html5shiv.min.js"></script>
+<![endif]-->
+
+
+
+
+
+
+
+    </div>
+  </body>
+</html>

@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  
+  <title>在MacOSX上搭建本地测试服务器的踩坑 | timlyeee.github.io</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <meta name="description" content="当在开发微信小游戏，或者部署一些云端资源时往往需要自定义测试服务器，以免抢占云端资源。之前有在Windows上使用Apache2搭建过一个localhost服务器，但是由于有在Mac上面开发的需求，所以转到Mac环境中又做了一遍，结果在这里踩了几个坑。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="在MacOSX上搭建本地测试服务器的踩坑">
+<meta property="og:url" content="http://timlyeee.github.io/2022/04/24/apache2ServerOnMacOSX/index.html">
+<meta property="og:site_name" content="timlyeee.github.io">
+<meta property="og:description" content="当在开发微信小游戏，或者部署一些云端资源时往往需要自定义测试服务器，以免抢占云端资源。之前有在Windows上使用Apache2搭建过一个localhost服务器，但是由于有在Mac上面开发的需求，所以转到Mac环境中又做了一遍，结果在这里踩了几个坑。">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2022-04-24T03:18:12.000Z">
+<meta property="article:modified_time" content="2023-01-05T12:56:11.061Z">
+<meta property="article:author" content="timlyeee">
+<meta name="twitter:card" content="summary">
+  
+    <link rel="alternate" href="../../../../atom.xml" title="timlyeee.github.io" type="application/atom+xml">
+  
+  
+    <link rel="shortcut icon" href="../../../../favicon.ico">
+  
+  
+<link rel="stylesheet" href="../css/typing.css">
+
+  
+<link rel="stylesheet" href="../css/donate.css">
+
+  
+  
+    
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@3/dist/jquery.fancybox.min.css">
+
+  
+<meta name="generator" content="Hexo 6.1.0"></head>
+
+  
+    
+      <body>
+    
+  
+      <div id="container" class="container">
+        <article id="post-apache2ServerOnMacOSX" class="h-entry article article-type-post" itemprop="blogPost" itemscope itemtype="https://schema.org/BlogPosting">
+  <header id="header" class="header">
+  <nav class="mobile-nav">
+    <h1 class="nickname">Tim Lee</h1>
+    <ul class="mobile-nav-menu">
+      <label for="mobile-menu-toggle"><a id="menu-button">&#9776; Menu</a></label>
+      <input type="checkbox" id="mobile-menu-toggle"/>
+      <ul class="mobile-nav-link">
+        
+        <a href="../index.html">Home</a>
+        
+        <a href="../archives">Archives</a>
+        
+        <a href="../about">About</a>
+        
+      </ul>
+    </ul>
+  </nav>
+	
+		<nav id="main-nav" class="main-nav">
+	
+	
+	  <a class="main-nav-link" href="../index.html">Home</a>
+	
+	  <a class="main-nav-link" href="../archives">Archives</a>
+	
+	  <a class="main-nav-link" href="../about">About</a>
+	
+  </nav>
+</header>
+
+  <hr/>
+  <div class="article-inner">
+    
+
+    
+      <header class="article-header">
+        
+  
+    <h1 class="p-name article-title" itemprop="headline name">
+      在MacOSX上搭建本地测试服务器的踩坑
+    </h1>
+  
+
+      </header>
+    
+    <div class="e-content article-entry typo" itemprop="articleBody">
+      
+        <p>当在开发微信小游戏，或者部署一些云端资源时往往需要自定义测试服务器，以免抢占云端资源。之前有在Windows上使用Apache2搭建过一个localhost服务器，但是由于有在Mac上面开发的需求，所以转到Mac环境中又做了一遍，结果在这里踩了几个坑。</p>
+<span id="more"></span>
+
+<h2 id="搭建服务器"><a href="#搭建服务器" class="headerlink" title="搭建服务器"></a>搭建服务器</h2><p>实际上MacOS环境中本身就已经配置好了环境，这意味着我们不需要另行下载Apache等工具。在这里推荐一篇文章可以对应不同版本的MacOSX进行微调。</p>
+<blockquote>
+<p><a target="_blank" rel="noopener" href="https://discussions.apple.com/docs/DOC-3083">Setting up a local web server on a Mac</a></p>
+</blockquote>
+<p>但是，如果是像我一样的小白，在依照上述方法创建好自己的个人文件夹并试图从外部设备打开时，则会遇到<code>Forbidden, you don&#39;t have permission to access this resource</code> 的错误。</p>
+<h2 id="Access-Forbidden-的坑"><a href="#Access-Forbidden-的坑" class="headerlink" title="Access Forbidden 的坑"></a>Access Forbidden 的坑</h2><p>其实原因在于文件夹的配置。在文章中有提到可以通过建立自己的文件夹而不是默认文件路径存储资源，因为MacOSX 10.7之后不会自动创建文件夹。而它给出的配置文件如下。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">&lt;Directory &quot;/Users/&lt;your short user name&gt;/Sites/&quot;&gt; </span><br><span class="line">  AddLanguage en .en </span><br><span class="line">  AddHandler perl-script .pl </span><br><span class="line">  PerlHandler ModPerl::Registry </span><br><span class="line">  Options Indexes MultiViews FollowSymLinks ExecCGI </span><br><span class="line">  AllowOverride None </span><br><span class="line">  Require host localhost #With this line, only host, localhost can access the Sites folder.</span><br><span class="line">&lt;/Directory&gt;</span><br></pre></td></tr></table></figure>
+
+<p>如果加上Require的设置，就会出现即便是本机，输入自己的ip也依然无法访问的情况。所以只要修改这一栏就行。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">&lt;Directory &quot;/Users/&lt;your short user name&gt;/Sites/&quot;&gt; </span><br><span class="line">  AddLanguage en .en </span><br><span class="line">  AddHandler perl-script .pl </span><br><span class="line">  PerlHandler ModPerl::Registry </span><br><span class="line">  Options Indexes MultiViews FollowSymLinks ExecCGI </span><br><span class="line">  AllowOverride None </span><br><span class="line">  # Require host localhost #With this line, only host, localhost can access the Sites folder.</span><br><span class="line">  Require all granted</span><br><span class="line">&lt;/Directory&gt;</span><br></pre></td></tr></table></figure>
+
+      
+      
+    </div>
+    <footer class="article-footer">
+      <ul class="article-meta">
+        <li>
+          <span class="label">Published Date:</span>
+          <a href="" class="article-date">
+  <time class="dt-published" datetime="2022-04-24T03:18:12.000Z" itemprop="datePublished">2022-04-24</time>
+</a>
+
+        </li>
+        
+        
+        <hr/>
+      </ul>
+    </footer>
+  </div>
+  
+    
+<nav id="article-nav" class="article-nav">
+  
+    <a href="../openal-research-for-recent-macosx/" id="article-nav-newer" class="article-nav-link-wrap newer">
+      <strong class="article-nav-caption">Newer</strong>
+      <div class="article-nav-title">
+        
+          MacOSX上的OpenAL开源代码分析
+        
+      </div>
+    </a>
+  
+  
+    <a href="../../../../2021/07/19/petit-cmake/" id="article-nav-older" class="article-nav-link-wrap older">
+      <strong class="article-nav-caption">Older</strong>
+      <div class="article-nav-title">简单的CMake小项目</div>
+    </a>
+  
+</nav>
+
+
+  
+</article>
+
+
+
+
+
+
+
+
+
+
+      </div>
+      
+    <footer id="footer" class="post-footer footer">
+      
+      <hr/>
+      <div id="footerContent" class="footer-content">
+        <p>Post</p>
+
+
+      </div>
+    </footer>
+
+      
+
+
+
+
+
+
+
+
+<script src="https://cdn.jsdelivr.net/npm/jquery@3/dist/jquery.min.js"></script>
+
+
+<script src="https://cdn.jsdelivr.net/npm/clipboard@2/dist/clipboard.min.js"></script>
+
+
+
+  
+<script src="https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@3/dist/jquery.fancybox.min.js"></script>
+
+
+
+
+<script src="../js/typing.js"></script>
+
+<!--[if lt IE 9]>
+<script src="https://cdn.jsdelivr.net/npm/html5shiv@3/dist/html5shiv.min.js"></script>
+<![endif]-->
+
+
+
+
+
+
+
+    </div>
+  </body>
+</html>

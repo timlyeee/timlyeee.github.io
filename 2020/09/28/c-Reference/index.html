@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  
+  <title>c++Reference | timlyeee.github.io</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <meta name="description" content="在我上大二那会儿，我才刚刚开始接触C++和C语言。我们的老师是法国老师A，一口法语说的贼溜，所以没有任何同学能听懂（笑😊）。所以老A讲C++指针和引用那一块儿的时候，我完全乱做一团。（嗯，关于老A的故事实在为0，所以要是哪一天我的记忆能够导出到电脑，说不定我能在blog里讲一讲。） 总之，哪怕是有中文助教，我还是上网查了半天记了半天笔记。 然后现在全忘了😭 这两天在研究院儿里做项目，用的是c#">
+<meta property="og:type" content="article">
+<meta property="og:title" content="c++Reference">
+<meta property="og:url" content="http://timlyeee.github.io/2020/09/28/c-Reference/index.html">
+<meta property="og:site_name" content="timlyeee.github.io">
+<meta property="og:description" content="在我上大二那会儿，我才刚刚开始接触C++和C语言。我们的老师是法国老师A，一口法语说的贼溜，所以没有任何同学能听懂（笑😊）。所以老A讲C++指针和引用那一块儿的时候，我完全乱做一团。（嗯，关于老A的故事实在为0，所以要是哪一天我的记忆能够导出到电脑，说不定我能在blog里讲一讲。） 总之，哪怕是有中文助教，我还是上网查了半天记了半天笔记。 然后现在全忘了😭 这两天在研究院儿里做项目，用的是c#">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2020-09-28T12:29:21.000Z">
+<meta property="article:modified_time" content="2023-01-05T12:56:11.062Z">
+<meta property="article:author" content="timlyeee">
+<meta name="twitter:card" content="summary">
+  
+    <link rel="alternate" href="../../../../atom.xml" title="timlyeee.github.io" type="application/atom+xml">
+  
+  
+    <link rel="shortcut icon" href="../../../../favicon.ico">
+  
+  
+<link rel="stylesheet" href="../css/typing.css">
+
+  
+<link rel="stylesheet" href="../css/donate.css">
+
+  
+  
+    
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@3/dist/jquery.fancybox.min.css">
+
+  
+<meta name="generator" content="Hexo 6.1.0"></head>
+
+  
+    
+      <body>
+    
+  
+      <div id="container" class="container">
+        <article id="post-c-Reference" class="h-entry article article-type-post" itemprop="blogPost" itemscope itemtype="https://schema.org/BlogPosting">
+  <header id="header" class="header">
+  <nav class="mobile-nav">
+    <h1 class="nickname">Tim Lee</h1>
+    <ul class="mobile-nav-menu">
+      <label for="mobile-menu-toggle"><a id="menu-button">&#9776; Menu</a></label>
+      <input type="checkbox" id="mobile-menu-toggle"/>
+      <ul class="mobile-nav-link">
+        
+        <a href="../index.html">Home</a>
+        
+        <a href="../archives">Archives</a>
+        
+        <a href="../about">About</a>
+        
+      </ul>
+    </ul>
+  </nav>
+	
+		<nav id="main-nav" class="main-nav">
+	
+	
+	  <a class="main-nav-link" href="../index.html">Home</a>
+	
+	  <a class="main-nav-link" href="../archives">Archives</a>
+	
+	  <a class="main-nav-link" href="../about">About</a>
+	
+  </nav>
+</header>
+
+  <hr/>
+  <div class="article-inner">
+    
+
+    
+      <header class="article-header">
+        
+  
+    <h1 class="p-name article-title" itemprop="headline name">
+      c++Reference
+    </h1>
+  
+
+      </header>
+    
+    <div class="e-content article-entry typo" itemprop="articleBody">
+      
+        <p>在我上大二那会儿，我才刚刚开始接触C++和C语言。我们的老师是法国老师A，一口法语说的贼溜，所以没有任何同学能听懂（笑😊）。所以老A讲C++指针和引用那一块儿的时候，我完全乱做一团。（嗯，关于老A的故事实在为0，所以要是哪一天我的记忆能够导出到电脑，说不定我能在blog里讲一讲。）</p>
+<p>总之，哪怕是有中文助教，我还是上网查了半天记了半天笔记。</p>
+<p>然后现在全忘了😭</p>
+<p>这两天在研究院儿里做项目，用的是c#，c#也是Unity的编程语言，我才猛然发现，由于之前写了太多JS代码，对于内存管理这一块儿实在投入太少，趁着今天查了一些东西，感觉把它们都记下来。说不定以后面试刷题能用到？</p>
+<span id="more"></span>
+
+<p>先从C++开始：<br>C++和C#的最大不同就是内存的清理。同样是面向对象语言，C#的内存管理更加简单易懂，如果不需要知道原理，用起来并不费事。但是C++不同，几乎所有的内存管理都是由程序员自己决定的。这也是为什么构造函数和解构函数会存在了。</p>
+<p>先扒一段菜鸟教程上的代码😛</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">int</span>  var1;</span><br><span class="line"><span class="type">char</span> var2[<span class="number">10</span>];</span><br><span class="line"> </span><br><span class="line">cout &lt;&lt; <span class="string">&quot;var1 变量的地址： &quot;</span>;</span><br><span class="line">cout &lt;&lt; &amp;var1 &lt;&lt; endl;</span><br><span class="line"> </span><br><span class="line">cout &lt;&lt; <span class="string">&quot;var2 变量的地址： &quot;</span>;</span><br><span class="line">cout &lt;&lt; &amp;var2 &lt;&lt; endl;</span><br></pre></td></tr></table></figure>
+<p>Output:</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">var1 变量的地址： 0xbfebd5c0</span><br><span class="line">var2 变量的地址： 0xbfebd5b6</span><br></pre></td></tr></table></figure>
+<p>所以&amp;这个符号直接使用的时候表示的就是地址啦。那么如果我想要在被调用的函数中直接使用这个变量，而不是在函数中复制一个新的变量，应该怎么引用它呢？</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="type">void</span> <span class="title">Swap</span><span class="params">(<span class="type">int</span>&amp; a,<span class="type">int</span>&amp; b)</span></span>&#123;</span><br><span class="line">    <span class="type">int</span> temp;</span><br><span class="line">	temp = a;</span><br><span class="line">	a = b;</span><br><span class="line">	b = temp;</span><br><span class="line">	<span class="keyword">return</span>;	</span><br><span class="line">&#125; </span><br><span class="line"><span class="function"><span class="type">int</span> <span class="title">main</span> <span class="params">()</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="comment">// 声明简单的变量</span></span><br><span class="line">    <span class="type">int</span>    i;</span><br><span class="line">    <span class="type">double</span> d;</span><br><span class="line"> </span><br><span class="line">    <span class="comment">// 声明引用变量</span></span><br><span class="line">    <span class="type">int</span>&amp;    r = i;</span><br><span class="line">    <span class="type">double</span>&amp; s = d;</span><br><span class="line"></span><br><span class="line">    i = <span class="number">5</span>;</span><br><span class="line">    cout &lt;&lt; <span class="string">&quot;Value of i : &quot;</span> &lt;&lt; i &lt;&lt; endl;</span><br><span class="line">    cout &lt;&lt; <span class="string">&quot;Value of i reference : &quot;</span> &lt;&lt; r  &lt;&lt; endl;</span><br><span class="line">    </span><br><span class="line">    r ++;</span><br><span class="line">    cout &lt;&lt; <span class="string">&quot;Value of i : &quot;</span> &lt;&lt; i &lt;&lt; endl;</span><br><span class="line">    cout &lt;&lt; <span class="string">&quot;Value of i reference : &quot;</span> &lt;&lt; r  &lt;&lt; endl;</span><br><span class="line"></span><br><span class="line">    d = <span class="number">11.7</span>;</span><br><span class="line">    cout &lt;&lt; <span class="string">&quot;Value of d : &quot;</span> &lt;&lt; d &lt;&lt; endl;</span><br><span class="line">    cout &lt;&lt; <span class="string">&quot;Value of d reference : &quot;</span> &lt;&lt; s  &lt;&lt; endl;</span><br><span class="line">   </span><br><span class="line">    <span class="type">int</span>     j = <span class="number">1</span>;</span><br><span class="line">    <span class="type">int</span>&amp;    l = j;</span><br><span class="line">    <span class="built_in">Swap</span>( r , l );</span><br><span class="line">    cout &lt;&lt; <span class="string">&quot;Value of i : &quot;</span> &lt;&lt; i &lt;&lt; endl;</span><br><span class="line">    cout &lt;&lt; <span class="string">&quot;Value of j : &quot;</span> &lt;&lt; j &lt;&lt; endl;</span><br><span class="line">    <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+<p>Output:</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">Value of i : 5</span><br><span class="line">Value of i reference : 5</span><br><span class="line">Value of i : 6</span><br><span class="line">Value of i reference : 6</span><br><span class="line">Value of d : 11.7</span><br><span class="line">Value of d reference : 11.7</span><br><span class="line">Value of i : 1</span><br><span class="line">Value of j : 6</span><br></pre></td></tr></table></figure>
+<p>所以简单来讲，就是声明变量时和传入参数时带上&amp;就行。那么引用是否可以满足我们日常的需求了呢？对于C++而言，不够。</p>
+<blockquote>
+<p>引用很容易与指针混淆，它们之间有三个主要的不同：</p>
+<ul>
+<li>不存在空引用。引用必须连接到一块合法的内存。</li>
+<li>一旦引用被初始化为一个对象，就不能被指向到另一个对象。指针可以在任何时候指向到另一个对象。</li>
+<li>引用必须在创建时被初始化。指针可以在任何时间被初始化。</li>
+</ul>
+</blockquote>
+<p>在我学C++那会儿，指针从来都是在IEnumerater里面做指向作用，由于需要操作的对象需要时时刻刻变化，不可能每遇到一个需要操作的对象就创建一个引用，那样的话创建引用的内存都要赶上创建对象的内存了（笑）。</p>
+<p>所以顾名思义，指针就是用来指向操作对象的。通常被用在各种流程操作中。</p>
+<p>那么指针怎么创建和传入参数？</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">int</span>  var = <span class="number">20</span>;   <span class="comment">// 实际变量的声明</span></span><br><span class="line"><span class="type">int</span>  *ip;        <span class="comment">// 指针变量的声明</span></span><br><span class="line"> </span><br><span class="line">ip = &amp;var;       <span class="comment">// 在指针变量中存储 var 的地址</span></span><br><span class="line"> </span><br><span class="line">cout &lt;&lt; <span class="string">&quot;Value of var variable: &quot;</span>;</span><br><span class="line">cout &lt;&lt; var &lt;&lt; endl;</span><br><span class="line"> </span><br><span class="line"><span class="comment">// 输出在指针变量中存储的地址</span></span><br><span class="line">cout &lt;&lt; <span class="string">&quot;Address stored in ip variable: &quot;</span>;</span><br><span class="line">cout &lt;&lt; ip &lt;&lt; endl;</span><br><span class="line"> </span><br><span class="line"><span class="comment">// 访问指针中地址的值</span></span><br><span class="line">cout &lt;&lt; <span class="string">&quot;Value of *ip variable: &quot;</span>;</span><br><span class="line">cout &lt;&lt; *ip &lt;&lt; endl;</span><br></pre></td></tr></table></figure>
+<p>Output:</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">Value of var variable: 20</span><br><span class="line">Address stored in ip variable: 0xbfc601ac</span><br><span class="line">Value of *ip variable: 20</span><br></pre></td></tr></table></figure>
+<p>不难发现，不仅变量的声明方法与引用不同，调用里面value的写法也不一样。</p>
+<p>这也是我当年搞不懂的地方之一。设想一下我如果把代码写成下面这些样子，哪些能运行，哪些有意义？</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line">   <span class="comment">// 声明简单的变量</span></span><br><span class="line">   <span class="type">int</span> i=<span class="number">20</span>;</span><br><span class="line">   </span><br><span class="line">   <span class="type">int</span> *a;</span><br><span class="line">    a=&amp;i;</span><br><span class="line"><span class="type">int</span> *b=i;</span><br><span class="line"><span class="type">int</span> *c=&amp;i;</span><br><span class="line">   <span class="type">int</span> *d= <span class="keyword">new</span> <span class="built_in">int</span>(<span class="number">5</span>);</span><br><span class="line">  </span><br><span class="line">   cout &lt;&lt; <span class="string">&quot;Value of *a: &quot;</span> &lt;&lt; *a &lt;&lt; endl;</span><br><span class="line">   cout &lt;&lt; <span class="string">&quot;Value of *b: &quot;</span> &lt;&lt; *b &lt;&lt; endl;</span><br><span class="line">   cout &lt;&lt; <span class="string">&quot;Value of *c: &quot;</span> &lt;&lt; *c &lt;&lt; endl;</span><br><span class="line">   cout &lt;&lt; <span class="string">&quot;Value of *d: &quot;</span> &lt;&lt; *d &lt;&lt; endl;</span><br><span class="line">   </span><br><span class="line">   *d=i;</span><br><span class="line">   </span><br><span class="line">   cout &lt;&lt; <span class="string">&quot;Value of *d: &quot;</span> &lt;&lt; *d &lt;&lt; endl;</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+<p>Output</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">Value of *a: 20</span><br><span class="line">Value of *b: Invalid!!!</span><br><span class="line">Value of *c: 20</span><br><span class="line">Value of *d: 5</span><br><span class="line">Value of *d: 20</span><br></pre></td></tr></table></figure>
+<p>在上述4中声明中，第二种是无法编译的，但却是最容易犯的错误。原因很简单，我们调用b的值时候，cout&lt;&lt;*b是很自然的事情，但如果想要让声明的变量b的值等同于i，这种写法就不行了。</p>
+<p>但是！如果我们在声明完变量d之后，让d地址中储存的值和i的值相等，就可以用等于号了。</p>
+<p>是不是很神奇？所以这个写法被我很自然地列在编程反人类行为Top10中🤮</p>
+<p>至于作为传参的指针以及跟函数的关系，我们就单开一章讲了（笑）。</p>
+<p>现在看看C#里面的引用。</p>
+<p>如果不开启Unsafe模式的化，C#的引用简直简单到爆！只需要在变量前面加上ref就行了！开启Unsafe之后的代码倒和C++没什么区别了。</p>
+<p>继续借，这次是Microsoft Doc的代码（我们程序员难道没有自己的代码嘛？？😂）</p>
+<figure class="highlight c#"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">Method</span>(<span class="params"><span class="keyword">ref</span> <span class="built_in">int</span> refArgument</span>)</span></span><br><span class="line">&#123;</span><br><span class="line">    refArgument = refArgument + <span class="number">44</span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="built_in">int</span> number = <span class="number">1</span>;</span><br><span class="line">Method(<span class="keyword">ref</span> number);</span><br><span class="line">Console.WriteLine(number);</span><br><span class="line"><span class="comment">// Output: 45</span></span><br></pre></td></tr></table></figure>
+<p>没有符号，因为不安全。。。</p>
+<p>这一点在我初识C#的时候简直不敢相信，这是因为C#默认的内存管理已经非常完善了，尤其是.Net开发组对自己的程序开发特别的自信。不然也不至于把调用指针的代码块标注成Unsafe了（笑）。</p>
+<p>行吧，再次把C++的指针搞懂了就行，后续还是会在C#上开发了。</p>
+<hr>
+<p>再说点日常。我上的大学是中法合作办学，来教编程的都是法国人，当时的课堂作业就是用C++写List类，从一开始的简单数组到后面的模板类List和Iterator全都写一遍。不得不说，这样写一遍下来基本上C++的各方各面都懂了。上完之后我还是很佩服的。</p>
+<p>结果到了法国留学的时候，Java编程课又写了一遍。。。于是我硬着头皮问老师为啥这么爱写List。老师愣了一下，说：</p>
+<p>“懒的编教材。”</p>
+<p>好吧。</p>
+
+      
+      
+    </div>
+    <footer class="article-footer">
+      <ul class="article-meta">
+        <li>
+          <span class="label">Published Date:</span>
+          <a href="" class="article-date">
+  <time class="dt-published" datetime="2020-09-28T12:29:21.000Z" itemprop="datePublished">2020-09-28</time>
+</a>
+
+        </li>
+        
+        
+        <hr/>
+      </ul>
+    </footer>
+  </div>
+  
+    
+<nav id="article-nav" class="article-nav">
+  
+    <a href="../../../../2021/03/10/Hexo-on-a-new-computer/" id="article-nav-newer" class="article-nav-link-wrap newer">
+      <strong class="article-nav-caption">Newer</strong>
+      <div class="article-nav-title">
+        
+          记录本博客的第一次迁移
+        
+      </div>
+    </a>
+  
+  
+    <a href="../../../../2019/10/16/Dream-start/" id="article-nav-older" class="article-nav-link-wrap older">
+      <strong class="article-nav-caption">Older</strong>
+      <div class="article-nav-title">梦想要先从有背景板开始</div>
+    </a>
+  
+</nav>
+
+
+  
+</article>
+
+
+
+
+
+
+
+
+
+
+      </div>
+      
+    <footer id="footer" class="post-footer footer">
+      
+      <hr/>
+      <div id="footerContent" class="footer-content">
+        <p>Post</p>
+
+
+      </div>
+    </footer>
+
+      
+
+
+
+
+
+
+
+
+<script src="https://cdn.jsdelivr.net/npm/jquery@3/dist/jquery.min.js"></script>
+
+
+<script src="https://cdn.jsdelivr.net/npm/clipboard@2/dist/clipboard.min.js"></script>
+
+
+
+  
+<script src="https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@3/dist/jquery.fancybox.min.js"></script>
+
+
+
+
+<script src="../js/typing.js"></script>
+
+<!--[if lt IE 9]>
+<script src="https://cdn.jsdelivr.net/npm/html5shiv@3/dist/html5shiv.min.js"></script>
+<![endif]-->
+
+
+
+
+
+
+
+    </div>
+  </body>
+</html>

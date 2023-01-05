@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  
+  <title>我只想 定制个人专属的 Hexo 主题 | timlyeee.github.io</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <meta name="description" content="“这我实在受不了，太枯燥了。”我盯着电脑发呆。这是我将近一个月以来第一次在晚上还需要写代码或者查bug。我心想，如果有这时间我倒不如写一些博客了。可是上一次博客在哪里写的？写到哪里了？真他娘的是个好问题。 “Hexo的迁移指南？”看着上一次迁移时的记录日志我不禁有些发愣。“整体拷贝项目到另一个文件夹？有些可取之处，但也仅限于能够保留完整的node_module的库文件，不会因为node环境变化而发">
+<meta property="og:type" content="article">
+<meta property="og:title" content="我只想 定制个人专属的 Hexo 主题">
+<meta property="og:url" content="http://timlyeee.github.io/2022/05/04/hackUrTheme/index.html">
+<meta property="og:site_name" content="timlyeee.github.io">
+<meta property="og:description" content="“这我实在受不了，太枯燥了。”我盯着电脑发呆。这是我将近一个月以来第一次在晚上还需要写代码或者查bug。我心想，如果有这时间我倒不如写一些博客了。可是上一次博客在哪里写的？写到哪里了？真他娘的是个好问题。 “Hexo的迁移指南？”看着上一次迁移时的记录日志我不禁有些发愣。“整体拷贝项目到另一个文件夹？有些可取之处，但也仅限于能够保留完整的node_module的库文件，不会因为node环境变化而发">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2022-05-04T08:42:50.000Z">
+<meta property="article:modified_time" content="2023-01-05T12:56:11.062Z">
+<meta property="article:author" content="timlyeee">
+<meta name="twitter:card" content="summary">
+  
+    <link rel="alternate" href="../../../../atom.xml" title="timlyeee.github.io" type="application/atom+xml">
+  
+  
+    <link rel="shortcut icon" href="../../../../favicon.ico">
+  
+  
+<link rel="stylesheet" href="../css/typing.css">
+
+  
+<link rel="stylesheet" href="../css/donate.css">
+
+  
+  
+    
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@3/dist/jquery.fancybox.min.css">
+
+  
+<meta name="generator" content="Hexo 6.1.0"></head>
+
+  
+    
+      <body>
+    
+  
+      <div id="container" class="container">
+        <article id="post-hackUrTheme" class="h-entry article article-type-post" itemprop="blogPost" itemscope itemtype="https://schema.org/BlogPosting">
+  <header id="header" class="header">
+  <nav class="mobile-nav">
+    <h1 class="nickname">Tim Lee</h1>
+    <ul class="mobile-nav-menu">
+      <label for="mobile-menu-toggle"><a id="menu-button">&#9776; Menu</a></label>
+      <input type="checkbox" id="mobile-menu-toggle"/>
+      <ul class="mobile-nav-link">
+        
+        <a href="../index.html">Home</a>
+        
+        <a href="../archives">Archives</a>
+        
+        <a href="../about">About</a>
+        
+      </ul>
+    </ul>
+  </nav>
+	
+		<nav id="main-nav" class="main-nav">
+	
+	
+	  <a class="main-nav-link" href="../index.html">Home</a>
+	
+	  <a class="main-nav-link" href="../archives">Archives</a>
+	
+	  <a class="main-nav-link" href="../about">About</a>
+	
+  </nav>
+</header>
+
+  <hr/>
+  <div class="article-inner">
+    
+
+    
+      <header class="article-header">
+        
+  
+    <h1 class="p-name article-title" itemprop="headline name">
+      我只想 定制个人专属的 Hexo 主题
+    </h1>
+  
+
+      </header>
+    
+    <div class="e-content article-entry typo" itemprop="articleBody">
+      
+        <p>“这我实在受不了，太枯燥了。”我盯着电脑发呆。这是我将近一个月以来第一次在晚上还需要写代码或者查bug。我心想，如果有这时间我倒不如写一些博客了。可是上一次博客在哪里写的？写到哪里了？真他娘的是个好问题。</p>
+<p>“Hexo的迁移指南？”看着上一次迁移时的记录日志我不禁有些发愣。“整体拷贝项目到另一个文件夹？有些可取之处，但也仅限于能够保留完整的node_module的库文件，不会因为node环境变化而发生不测了吧。”我叹了口气。上一次的博客应该是在家里写的吧，用的windows环境。要是再换一次，可得累死。</p>
+<p>“还是换成github托管吧，重新下一遍依赖也无所谓了。”我点开github创建了私人仓库，从而能够把个人的老旧项目push上去。“hexo也要升级。不然新版本怕是会有破坏兼容性的问题。。。？艹？怎么报错了？”我揉了揉眼睛，不对啊，这玩意儿我也没改版本啊？</p>
+<p>“主题只支持到hexo3.x版本？？主题还有版本限制的？那岂不是新的插件都用不了？”我叹了口气，最近的生活充斥着妥协，现在就连博客都开始需要我妥协了吗？“算了换个主题吧。”</p>
+<p>我点开Hexo的主题界面，眼花缭乱的主题们映入我的眼帘，这一刻我是幸福的，看，这么多主题可以给我翻牌子。但风格化的东西却很少。</p>
+<p>对于个人博客我尤其不满的一点就是博客的风格主题，虽然hexo的主题商店里面有很多可以选择的主题，大多也具备适应性布局，简约和markdown语法解析等功能，但是主题的定制化一直是个问题。我尤其没有办法定制属于自己的颜色。所以如果想要实现不同的艺术效果，就必须去看源码了。这可太不公平了，因为每个主题所使用的框架都不相同，我已经看到了不下三种完全不同风格的架构，ejs&#x2F;swig&#x2F;pug。对于我这样只是稍稍写写博客的人而言很难做到精通每一种框架。</p>
+<p>“爷妥协了那么多次了，在完全属于我的个人博客里还要妥协？我办不到。”我的眼神凌厉起来，这种事情我确实不能忍，如果只是拷贝一个和原本差不多的主题，我为何不直接用简书或者知乎？我点开Hexo的主题推荐，最符合我自定义想法的主题框架还是越稳定越好，那么就选这一个了。<a target="_blank" rel="noopener" href="https://github.com/theme-next/hexo-theme-next">Next</a>。“这次的主页，我想用粉色和青色作为主题，然后在主页加上涂鸦元素。。”我打开procreate画了起来。</p>
+<h2 id="主页的设计"><a href="#主页的设计" class="headerlink" title="主页的设计"></a>主页的设计</h2><h3 id="定制Header"><a href="#定制Header" class="headerlink" title="定制Header"></a>定制Header</h3><p>关于定制Header我有许多可以说道的地方，毕竟网页的头部可以说是网站的门面，一定要是属于自己的风格，最初的设计是双色粉刷风格。</p>
+<p>涂鸦般的字体<a target="_blank" rel="noopener" href="https://codepen.io/rickyeckhardt/pen/nPaBEx">https://codepen.io/rickyeckhardt/pen/nPaBEx</a></p>
+<p><a target="_blank" rel="noopener" href="https://www.lionad.art/articles/css-light-travel.html">https://www.lionad.art/articles/css-light-travel.html</a></p>
+<p>颗粒效果 <a target="_blank" rel="noopener" href="https://css-tricks.com/grainy-gradients/">https://css-tricks.com/grainy-gradients/</a></p>
+
+      
+      
+    </div>
+    <footer class="article-footer">
+      <ul class="article-meta">
+        <li>
+          <span class="label">Published Date:</span>
+          <a href="" class="article-date">
+  <time class="dt-published" datetime="2022-05-04T08:42:50.000Z" itemprop="datePublished">2022-05-04</time>
+</a>
+
+        </li>
+        
+        
+        <hr/>
+      </ul>
+    </footer>
+  </div>
+  
+    
+<nav id="article-nav" class="article-nav">
+  
+    <a href="../../11/integrateCocosToHexo/" id="article-nav-newer" class="article-nav-link-wrap newer">
+      <strong class="article-nav-caption">Newer</strong>
+      <div class="article-nav-title">
+        
+          integrateCocosToHexo
+        
+      </div>
+    </a>
+  
+  
+    <a href="../../../04/24/openal-research-for-recent-macosx/" id="article-nav-older" class="article-nav-link-wrap older">
+      <strong class="article-nav-caption">Older</strong>
+      <div class="article-nav-title">MacOSX上的OpenAL开源代码分析</div>
+    </a>
+  
+</nav>
+
+
+  
+</article>
+
+
+
+
+
+
+
+
+
+
+      </div>
+      
+    <footer id="footer" class="post-footer footer">
+      
+      <hr/>
+      <div id="footerContent" class="footer-content">
+        <p>Post</p>
+
+
+      </div>
+    </footer>
+
+      
+
+
+
+
+
+
+
+
+<script src="https://cdn.jsdelivr.net/npm/jquery@3/dist/jquery.min.js"></script>
+
+
+<script src="https://cdn.jsdelivr.net/npm/clipboard@2/dist/clipboard.min.js"></script>
+
+
+
+  
+<script src="https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@3/dist/jquery.fancybox.min.js"></script>
+
+
+
+
+<script src="../js/typing.js"></script>
+
+<!--[if lt IE 9]>
+<script src="https://cdn.jsdelivr.net/npm/html5shiv@3/dist/html5shiv.min.js"></script>
+<![endif]-->
+
+
+
+
+
+
+
+    </div>
+  </body>
+</html>

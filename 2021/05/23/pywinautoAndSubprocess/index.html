@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  
+  <title>通过创建并监听子进程并用pywinauto进行测试 | timlyeee.github.io</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <meta name="description" content="恭喜我终于找到工作啦！一直以为自己技术栈很浅所以不太容易来着。现在是做游戏引擎开发相关的工作，还在熟悉阶段，但是确实是我热衷的方面了。 最近在和测试组对接工作。进行测试用例的维护和原生平台的bug排查。有几个测试用例在win32平台上出了错，然而我源代码都还没搞懂。更糟糕的是，测试组那边并没有保留测试时编译的可执行文件，这让我无从下手。 为了让后续的排查更方便，我和测试组沟通让他们保留测试时的ex">
+<meta property="og:type" content="article">
+<meta property="og:title" content="通过创建并监听子进程并用pywinauto进行测试">
+<meta property="og:url" content="http://timlyeee.github.io/2021/05/23/pywinautoAndSubprocess/index.html">
+<meta property="og:site_name" content="timlyeee.github.io">
+<meta property="og:description" content="恭喜我终于找到工作啦！一直以为自己技术栈很浅所以不太容易来着。现在是做游戏引擎开发相关的工作，还在熟悉阶段，但是确实是我热衷的方面了。 最近在和测试组对接工作。进行测试用例的维护和原生平台的bug排查。有几个测试用例在win32平台上出了错，然而我源代码都还没搞懂。更糟糕的是，测试组那边并没有保留测试时编译的可执行文件，这让我无从下手。 为了让后续的排查更方便，我和测试组沟通让他们保留测试时的ex">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2021-05-23T12:42:39.000Z">
+<meta property="article:modified_time" content="2023-01-05T12:56:11.065Z">
+<meta property="article:author" content="timlyeee">
+<meta name="twitter:card" content="summary">
+  
+    <link rel="alternate" href="../../../../atom.xml" title="timlyeee.github.io" type="application/atom+xml">
+  
+  
+    <link rel="shortcut icon" href="../../../../favicon.ico">
+  
+  
+<link rel="stylesheet" href="../css/typing.css">
+
+  
+<link rel="stylesheet" href="../css/donate.css">
+
+  
+  
+    
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@3/dist/jquery.fancybox.min.css">
+
+  
+<meta name="generator" content="Hexo 6.1.0"></head>
+
+  
+    
+      <body>
+    
+  
+      <div id="container" class="container">
+        <article id="post-pywinautoAndSubprocess" class="h-entry article article-type-post" itemprop="blogPost" itemscope itemtype="https://schema.org/BlogPosting">
+  <header id="header" class="header">
+  <nav class="mobile-nav">
+    <h1 class="nickname">Tim Lee</h1>
+    <ul class="mobile-nav-menu">
+      <label for="mobile-menu-toggle"><a id="menu-button">&#9776; Menu</a></label>
+      <input type="checkbox" id="mobile-menu-toggle"/>
+      <ul class="mobile-nav-link">
+        
+        <a href="../index.html">Home</a>
+        
+        <a href="../archives">Archives</a>
+        
+        <a href="../about">About</a>
+        
+      </ul>
+    </ul>
+  </nav>
+	
+		<nav id="main-nav" class="main-nav">
+	
+	
+	  <a class="main-nav-link" href="../index.html">Home</a>
+	
+	  <a class="main-nav-link" href="../archives">Archives</a>
+	
+	  <a class="main-nav-link" href="../about">About</a>
+	
+  </nav>
+</header>
+
+  <hr/>
+  <div class="article-inner">
+    
+
+    
+      <header class="article-header">
+        
+  
+    <h1 class="p-name article-title" itemprop="headline name">
+      通过创建并监听子进程并用pywinauto进行测试
+    </h1>
+  
+
+      </header>
+    
+    <div class="e-content article-entry typo" itemprop="articleBody">
+      
+        <p>恭喜我终于找到工作啦！一直以为自己技术栈很浅所以不太容易来着。现在是做游戏引擎开发相关的工作，还在熟悉阶段，但是确实是我热衷的方面了。</p>
+<p>最近在和测试组对接工作。进行测试用例的维护和原生平台的bug排查。有几个测试用例在win32平台上出了错，然而我源代码都还没搞懂。更糟糕的是，测试组那边并没有保留测试时编译的可执行文件，这让我无从下手。</p>
+<p>为了让后续的排查更方便，我和测试组沟通让他们保留测试时的exe文件。顺便用监听exe日志输出的方式排查文件消息。</p>
+<span id="more"></span>
+
+<h2 id="cmd中的输出"><a href="#cmd中的输出" class="headerlink" title="cmd中的输出"></a>cmd中的输出</h2><p>这需要明白一个事实，就是exe文件实际上是会有控制台输出的。在cmd中用下列命令就可以打印并显示。</p>
+<figure class="highlight cmd"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">test.exe &gt; log.txt</span><br></pre></td></tr></table></figure>
+<p>但是这个命令在powershell中是不可用的，会卡死。毕竟powershell本质是shell的一种而不是prompt。</p>
+<h2 id="基于cmd的pywinauto"><a href="#基于cmd的pywinauto" class="headerlink" title="基于cmd的pywinauto"></a>基于cmd的pywinauto</h2><p>对于引擎的测试，大部分是通过图像对比的方式进行的。这里不得不提到一个工具库就是pywinauto。他可以直接获取程序运行时的各种控件并点击然后测试。继而通过截图对比测试预期效果和实际效果的差距。</p>
+<p>创建一个pywinauto的程序需要用下面的python代码。</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">app = pywinauto.application().start(<span class="string">&quot;test.exe&quot;</span>)</span><br></pre></td></tr></table></figure>
+<p>其本身调用的是cmd的命令，即其可以写成下面的形式并输入参数</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">app = pywinauto.application().start(cmd_line=<span class="string">&quot;test.exe arg1 arg2&quot;</span>)</span><br></pre></td></tr></table></figure>
+<p>于是我们理所当然的希望它能够直接和第一部分说的cmd命令一样打印日志出来。但是很可惜的是，pywinauto并不能做到这件事，也没有原生方法支持这件事。</p>
+<p><a target="_blank" rel="noopener" href="https://github.com/pywinauto/pywinauto/issues/1075">https://github.com/pywinauto/pywinauto/issues/1075</a></p>
+<p>所以这时候就需要用到subprocess来帮助我们。</p>
+<h2 id="利用subprocess进行监听"><a href="#利用subprocess进行监听" class="headerlink" title="利用subprocess进行监听"></a>利用subprocess进行监听</h2><p>我问了前辈，如果是在内部编辑器里面，是会用什么方法去监听控制台输出呢？答曰：创建并监听子进程。python同理。</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">app = subprocess.popen(<span class="string">&quot;test.exe&quot;</span>)</span><br><span class="line">app = pywinauto.application().connect(app)</span><br></pre></td></tr></table></figure>
+<p>pywinauto虽然并没有原生的方法进行监听，但是可以通过连接到现有进程进行测试。需要注意的是，subprocess在打开进程后，代码会卡住，因为这个打开操作并非异步的，需要在方法中创建一个进程，并且使用异步的方法进行监听。</p>
+
+      
+      
+    </div>
+    <footer class="article-footer">
+      <ul class="article-meta">
+        <li>
+          <span class="label">Published Date:</span>
+          <a href="" class="article-date">
+  <time class="dt-published" datetime="2021-05-23T12:42:39.000Z" itemprop="datePublished">2021-05-23</time>
+</a>
+
+        </li>
+        
+        
+        <hr/>
+      </ul>
+    </footer>
+  </div>
+  
+    
+<nav id="article-nav" class="article-nav">
+  
+    <a href="../../../06/20/how2CompileALibrary-md/" id="article-nav-newer" class="article-nav-link-wrap newer">
+      <strong class="article-nav-caption">Newer</strong>
+      <div class="article-nav-title">
+        
+          如何从零开始编译二进制静态库或动态库
+        
+      </div>
+    </a>
+  
+  
+    <a href="../../../04/05/locks-2/" id="article-nav-older" class="article-nav-link-wrap older">
+      <strong class="article-nav-caption">Older</strong>
+      <div class="article-nav-title">从互斥机制到锁</div>
+    </a>
+  
+</nav>
+
+
+  
+</article>
+
+
+
+
+
+
+
+
+
+
+      </div>
+      
+    <footer id="footer" class="post-footer footer">
+      
+      <hr/>
+      <div id="footerContent" class="footer-content">
+        <p>Post</p>
+
+
+      </div>
+    </footer>
+
+      
+
+
+
+
+
+
+
+
+<script src="https://cdn.jsdelivr.net/npm/jquery@3/dist/jquery.min.js"></script>
+
+
+<script src="https://cdn.jsdelivr.net/npm/clipboard@2/dist/clipboard.min.js"></script>
+
+
+
+  
+<script src="https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@3/dist/jquery.fancybox.min.js"></script>
+
+
+
+
+<script src="../js/typing.js"></script>
+
+<!--[if lt IE 9]>
+<script src="https://cdn.jsdelivr.net/npm/html5shiv@3/dist/html5shiv.min.js"></script>
+<![endif]-->
+
+
+
+
+
+
+
+    </div>
+  </body>
+</html>

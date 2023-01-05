@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  
+  <title>从互斥机制到锁 | timlyeee.github.io</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <meta name="description" content="从机制和原理讲到锁，自然而然的将会从想法到实现机制进行转变。因此，本节将注重阐述各种锁的区别和简单的python代码实现。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="从互斥机制到锁">
+<meta property="og:url" content="http://timlyeee.github.io/2021/04/05/locks-2/index.html">
+<meta property="og:site_name" content="timlyeee.github.io">
+<meta property="og:description" content="从机制和原理讲到锁，自然而然的将会从想法到实现机制进行转变。因此，本节将注重阐述各种锁的区别和简单的python代码实现。">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="http://timlyeee.github.io/2021/04/05/locks-2/locks.png">
+<meta property="article:published_time" content="2021-04-05T02:20:17.000Z">
+<meta property="article:modified_time" content="2023-01-05T12:56:11.064Z">
+<meta property="article:author" content="timlyeee">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="http://timlyeee.github.io/2021/04/05/locks-2/locks.png">
+  
+    <link rel="alternate" href="../../../../atom.xml" title="timlyeee.github.io" type="application/atom+xml">
+  
+  
+    <link rel="shortcut icon" href="../../../../favicon.ico">
+  
+  
+<link rel="stylesheet" href="../css/typing.css">
+
+  
+<link rel="stylesheet" href="../css/donate.css">
+
+  
+  
+    
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@3/dist/jquery.fancybox.min.css">
+
+  
+<meta name="generator" content="Hexo 6.1.0"></head>
+
+  
+    
+      <body>
+    
+  
+      <div id="container" class="container">
+        <article id="post-locks-2" class="h-entry article article-type-post" itemprop="blogPost" itemscope itemtype="https://schema.org/BlogPosting">
+  <header id="header" class="header">
+  <nav class="mobile-nav">
+    <h1 class="nickname">Tim Lee</h1>
+    <ul class="mobile-nav-menu">
+      <label for="mobile-menu-toggle"><a id="menu-button">&#9776; Menu</a></label>
+      <input type="checkbox" id="mobile-menu-toggle"/>
+      <ul class="mobile-nav-link">
+        
+        <a href="../index.html">Home</a>
+        
+        <a href="../archives">Archives</a>
+        
+        <a href="../about">About</a>
+        
+      </ul>
+    </ul>
+  </nav>
+	
+		<nav id="main-nav" class="main-nav">
+	
+	
+	  <a class="main-nav-link" href="../index.html">Home</a>
+	
+	  <a class="main-nav-link" href="../archives">Archives</a>
+	
+	  <a class="main-nav-link" href="../about">About</a>
+	
+  </nav>
+</header>
+
+  <hr/>
+  <div class="article-inner">
+    
+
+    
+      <header class="article-header">
+        
+  
+    <h1 class="p-name article-title" itemprop="headline name">
+      从互斥机制到锁
+    </h1>
+  
+
+      </header>
+    
+    <div class="e-content article-entry typo" itemprop="articleBody">
+      
+        <p>从机制和原理讲到锁，自然而然的将会从想法到实现机制进行转变。因此，本节将注重阐述各种锁的区别和简单的python代码实现。</p>
+<span id="more"></span>
+
+<h2 id="锁的概念"><a href="#锁的概念" class="headerlink" title="锁的概念"></a>锁的概念</h2><p>虽然我学过JAVA，但是很多并发编程的知识我是一窍不通。但是并发这个东西无论是JAVA还是C++编程应该都是存在的。锁作为并发共享数据，保证线程同步性的工具，是需要我去仔细钻研的。</p>
+<p><img src="locks.png" alt="锁的基本原理"></p>
+<p>我们说对一个变量上锁，实际上就是指当进程想要使用某一部分资源的时候，如果是独占性资源，需要首先把这个资源锁上占为己有，直到释放。以此原理而诞生的锁有很多种，首先就是互斥锁。互斥的概念我们上一章有讲到，所以直接进入正题。</p>
+<h2 id="互斥锁"><a href="#互斥锁" class="headerlink" title="互斥锁"></a>互斥锁</h2><p>当多个线程几乎同时修改某一个共享数据的时候，需要进行同步控制。线程同步能够保证多个线程安全访问竞争资源，最简单的同步机制是引入互斥锁。互斥锁为资源引入一个状态：锁定&#x2F;非锁定</p>
+<p><strong>mutex</strong>（mutual exclusive）即<strong>互斥量（互斥体）</strong>。也便是常说的互斥锁。</p>
+<p><strong>mutex是睡眠等待（sleep waiting）类型的锁，当线程抢互斥锁失败的时候，线程会陷入休眠。</strong></p>
+<h3 id="进程调度"><a href="#进程调度" class="headerlink" title="进程调度"></a>进程调度</h3><p>小的概念补充：进程调度。</p>
+<p>无论是在批处理系统还是分时系统中，用户进程数一般都多于处理机数、这将导致它们互相争夺处理机。另外，系统进程也同样需要使用处理机。这就要求进程调度程序按一定的策略，动态地把处理机分配给处于就绪队列中的某一个进程，以使之执行。</p>
+<blockquote>
+<p>进程调度会把“缺乏资源”的进程置于休眠队列、又要把休眠队列中资源要求可以满足的进程置于等待队列——然后时间片一到就会调度运行。</p>
+</blockquote>
+<blockquote>
+<p>一般学到这里，我们都会觉得“资源”嘛，就是磁盘访问、网络通信之类东西：它们忙不忙，操作系统自然是知道的……其实不然。操作系统在这里做了“归一化”处理，它压根懒得知道你在等什么（不然进程调度就实现的过于复杂了）。所谓的“资源”，在进程调度逻辑看来，就是一个个“锁”——请求锁得不到满足，就是“缺乏资源”；锁被释放了，请求它的进程显然就有“资源”可用了。。</p>
+</blockquote>
+<blockquote>
+<p>来自 <a target="_blank" rel="noopener" href="https://www.zhihu.com/question/66733477/answer/246760992">https://www.zhihu.com/question/66733477/answer/246760992</a></p>
+</blockquote>
+<p>那么互斥锁就是相对两个进程而言的对同一资源的利用。</p>
+<p>threading模块中定义了Lock类，可以方便的处理锁定：</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 创建锁</span></span><br><span class="line">mutex = threading.Lock()</span><br><span class="line"></span><br><span class="line"><span class="comment"># 锁定</span></span><br><span class="line">mutex.acquire()</span><br><span class="line"></span><br><span class="line"><span class="comment"># 释放</span></span><br><span class="line">mutex.release()</span><br></pre></td></tr></table></figure>
+<p>注意：</p>
+<ul>
+<li>如果这个锁之前是没有上锁的，那么acquire不会堵塞</li>
+<li>如果在调用acquire对这个锁上锁之前 它已经被其他线程上了锁，那么此时acquire会堵塞，直到这个锁被解锁为止</li>
+</ul>
+<h3 id="使用互斥锁完成2个线程对同一个全局变量各加9999999-次的操作"><a href="#使用互斥锁完成2个线程对同一个全局变量各加9999999-次的操作" class="headerlink" title="使用互斥锁完成2个线程对同一个全局变量各加9999999 次的操作"></a>使用互斥锁完成2个线程对同一个全局变量各加9999999 次的操作</h3><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> threading</span><br><span class="line"><span class="keyword">import</span> time</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">g_num = <span class="number">0</span> </span><br><span class="line"><span class="comment"># 创建一个互斥锁，默认为未上锁状态</span></span><br><span class="line">mutex = threading.Lock()</span><br><span class="line"></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">test1</span>(<span class="params">num</span>):</span><br><span class="line">        <span class="keyword">global</span> g_num</span><br><span class="line">    </span><br><span class="line">        <span class="keyword">for</span> i <span class="keyword">in</span> <span class="built_in">range</span>(num):</span><br><span class="line">    </span><br><span class="line">                mutex.acquire()</span><br><span class="line">                g_num += <span class="number">1</span></span><br><span class="line">                mutex.release()</span><br><span class="line">        <span class="built_in">print</span>(<span class="string">&quot;--test1, g_num = %d--&quot;</span> % g_num)</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">test2</span>(<span class="params">num</span>):</span><br><span class="line">        <span class="keyword">global</span> g_num</span><br><span class="line">    </span><br><span class="line">        <span class="keyword">for</span> i <span class="keyword">in</span> <span class="built_in">range</span>(num):</span><br><span class="line">    </span><br><span class="line">                mutex.acquire()</span><br><span class="line">                g_num += <span class="number">1</span></span><br><span class="line">                mutex.release()</span><br><span class="line">    </span><br><span class="line">        <span class="built_in">print</span>(<span class="string">&quot;--test2, g_num = %d--&quot;</span> % g_num)</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="keyword">if</span> __name__ == <span class="string">&quot;__main__&quot;</span>:</span><br><span class="line">    </span><br><span class="line">        <span class="built_in">print</span>(<span class="string">&quot;--创建线程之前, g_num = %d--&quot;</span> % g_num)</span><br><span class="line"></span><br><span class="line">        t1 = threading.Thread(target=test1, args=(<span class="number">9999999</span>,))</span><br><span class="line">        t1.start()</span><br><span class="line"></span><br><span class="line">        t2 = threading.Thread(target=test2, args=(<span class="number">9999999</span>,))</span><br><span class="line">        t2.start()</span><br><span class="line">    </span><br><span class="line">        <span class="keyword">while</span> <span class="built_in">len</span>(threading.<span class="built_in">enumerate</span>()) != <span class="number">1</span>:</span><br><span class="line">                time.sleep(<span class="number">1</span>)</span><br><span class="line">    </span><br><span class="line">        <span class="built_in">print</span>(<span class="string">&quot;最终结果为：g_num=%d&quot;</span> % g_num)</span><br></pre></td></tr></table></figure>
+<p>运行结果</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">--创建线程之前, g_num = 0--</span><br><span class="line">--test1, g_num = 19580251--</span><br><span class="line">--test2, g_num = 19999998--</span><br><span class="line">最终结果为：g_num=19999998 </span><br></pre></td></tr></table></figure>
+<p>从代码里可见，锁的创建方法并不与所控制的变量相绑定，而是单独创建即可。而两个进程争夺的也不是变量的控制权，而是锁的控制权。获得锁的控制权后进而改变变量。</p>
+<p>锁的好处：</p>
+<ul>
+<li>确保了某段关键代码只能由一个线程从头到尾完整地执行</li>
+</ul>
+<p>锁的坏处：</p>
+<ul>
+<li>阻止了多线程并发执行，包含锁的某段代码实际上只能以单线程模式执行，效率就大大地下降了</li>
+<li>由于可以存在多个锁，不同的线程持有不同的锁，并试图获取对方持有的锁时，可能会造成死锁</li>
+</ul>
+<h3 id="死锁"><a href="#死锁" class="headerlink" title="死锁"></a>死锁</h3><p>在线程间共享多个资源的时候，如果两个线程分别占有一部分资源并且同时等待对方的资源，就会造成死锁。</p>
+<p>尽管死锁很少发生，但一旦发生就会造成应用的停止响应。下面看一个死锁的例子</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> threading</span><br><span class="line"><span class="keyword">import</span> time</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="keyword">class</span> <span class="title class_">MyThread1</span>(threading.Thread):</span><br><span class="line"></span><br><span class="line">	<span class="keyword">def</span> <span class="title function_">run</span>(<span class="params">self</span>):</span><br><span class="line">		</span><br><span class="line">		<span class="comment"># 对mutex1上锁</span></span><br><span class="line">		mutex1.acquire()</span><br><span class="line">		</span><br><span class="line">		<span class="comment"># mutex1上锁后，延迟1秒，等待另外一个线程，把mutex2上锁</span></span><br><span class="line">		<span class="built_in">print</span>(self.name + <span class="string">&quot; up&quot;</span>)</span><br><span class="line">		time.sleep(<span class="number">1</span>)</span><br><span class="line"></span><br><span class="line">		<span class="comment"># 此时这里会堵塞，因为mutex2已经被另外的线程抢先上锁了</span></span><br><span class="line">		mutex2.acquire()</span><br><span class="line">		<span class="built_in">print</span>(self.name + <span class="string">&quot; down&quot;</span>)</span><br><span class="line">		mutex2.release()</span><br><span class="line">		</span><br><span class="line">		<span class="comment"># 对mutex1解锁</span></span><br><span class="line">		mutex1.release()</span><br><span class="line">		</span><br><span class="line"></span><br><span class="line"><span class="keyword">class</span> <span class="title class_">MyThread2</span>(threading.Thread):</span><br><span class="line"></span><br><span class="line">	<span class="keyword">def</span> <span class="title function_">run</span>(<span class="params">self</span>):</span><br><span class="line">		</span><br><span class="line">		<span class="comment"># 对mutex2上锁</span></span><br><span class="line">		mutex2.acquire()</span><br><span class="line">		</span><br><span class="line">		<span class="comment"># mutex2上锁后，延迟1秒，等待另外一个线程，把mutex1上锁</span></span><br><span class="line">		<span class="built_in">print</span>(self.name + <span class="string">&quot; up&quot;</span>)</span><br><span class="line">		time.sleep(<span class="number">1</span>)</span><br><span class="line"></span><br><span class="line">		<span class="comment"># 此时这里会堵塞，因为mutex1已经被另外的线程抢先上锁了</span></span><br><span class="line">		mutex1.acquire()</span><br><span class="line">		<span class="built_in">print</span>(self.name + <span class="string">&quot; down&quot;</span>)</span><br><span class="line">		mutex1.release()</span><br><span class="line">		</span><br><span class="line">		<span class="comment"># 对mutex2解锁</span></span><br><span class="line">		mutex2.release()</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">mutex1 = threading.Lock()</span><br><span class="line">mutex2 = threading.Lock()</span><br><span class="line"></span><br><span class="line"><span class="keyword">if</span> __name__ == <span class="string">&quot;__main__&quot;</span>:</span><br><span class="line">	</span><br><span class="line">	t1 = MyThread1()</span><br><span class="line">	t1.start()</span><br><span class="line"></span><br><span class="line">	t2 = MyThread2()</span><br><span class="line">	t2.start()</span><br></pre></td></tr></table></figure>
+
+<p>两个进程互相拥有一个锁的情况下去寻求彼此的锁却不释放。其实本身代码就是有毛病的。但是这确实是死锁状态了。</p>
+<h2 id="自旋锁"><a href="#自旋锁" class="headerlink" title="自旋锁"></a>自旋锁</h2><p>自旋锁与互斥锁有点类似，只是自旋锁不会引起调用者睡眠，如果自旋锁已经被别的执行单元保持，调用者就一直循环在那里看是否该自旋锁的保持者已经释放了锁，”自旋”一词就是因此而得名。</p>
+<p>简单来想的话，甚至不需要编程就能解释。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">while</span> (抢锁(lock) == 没抢到) &#123;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>由于自旋锁使用者一般保持锁时间非常短，因此选择自旋而不是睡眠是非常必要的，自旋锁的效率远高于互斥锁。但是如果是在长时间共同操作一个变量的话，互斥锁也是一种选择。</p>
+<p>换而言之，互斥锁其实是自旋锁的进一步利用，因为自旋锁如果没抢到的话会一直循环，而mutex则是睡眠并等待锁解开后的提醒。</p>
+<p>锁的结果和我们之前学的阻塞是一样的，如果抢不到锁，就会被阻塞住。</p>
+<h2 id="读写锁"><a href="#读写锁" class="headerlink" title="读写锁"></a>读写锁</h2><p>ReadWriteLock管理一组锁，一个是只读的锁，一个是写锁。读锁可以在没有写锁的时候被多个线程同时持有，写锁是独占的。所有读写锁的实现<strong>必须确保写操作对读操作的内存影响</strong>。换句话说，<strong>一个获得了读锁的线程必须能看到前一个释放的写锁所更新的内容</strong>。</p>
+<p>读写锁比互斥锁允许对于共享数据更大程度的并发。每次只能有一个写线程，但是同时可以有多个线程并发地读数据。ReadWriteLock适用于读多写少的并发情况。</p>
+<blockquote>
+<p>当读写锁在读加锁状态时, 所有试图以读模式对它进行加锁的线程都可以得到访问权, 但是如果线程希望以写模式对此锁进行加锁, 它必须直到所有的线程释放锁.</p>
+</blockquote>
+<p>我们用python来对读写锁进行模拟的话，实际上就是设置一个锁组。</p>
+<blockquote>
+<p>参考 <a target="_blank" rel="noopener" href="https://segmentfault.com/a/1190000016900930">https://segmentfault.com/a/1190000016900930</a></p>
+</blockquote>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> threading</span><br><span class="line"></span><br><span class="line"><span class="keyword">class</span> <span class="title class_">RWlock</span>(<span class="title class_ inherited__">object</span>):</span><br><span class="line">    <span class="keyword">def</span> <span class="title function_">__init__</span>(<span class="params">self</span>):</span><br><span class="line">        self._lock = threading.Lock()</span><br><span class="line">        self._extra = threading.Lock()</span><br><span class="line">        self.read_num = <span class="number">0</span></span><br><span class="line"></span><br><span class="line">    <span class="keyword">def</span> <span class="title function_">read_acquire</span>(<span class="params">self</span>):</span><br><span class="line">        <span class="keyword">with</span> self._extra:</span><br><span class="line">            self.read_num += <span class="number">1</span></span><br><span class="line">            <span class="keyword">if</span> self.read_num == <span class="number">1</span>:</span><br><span class="line">                self._lock.acquire()</span><br><span class="line"></span><br><span class="line">    <span class="keyword">def</span> <span class="title function_">read_release</span>(<span class="params">self</span>):</span><br><span class="line">        <span class="keyword">with</span> self._extra:</span><br><span class="line">            self.read_num -= <span class="number">1</span></span><br><span class="line">            <span class="keyword">if</span> self.read_num == <span class="number">0</span>:</span><br><span class="line">                self._lock.release()</span><br><span class="line"></span><br><span class="line">    <span class="keyword">def</span> <span class="title function_">write_acquire</span>(<span class="params">self</span>):</span><br><span class="line">        self._lock.acquire()</span><br><span class="line"></span><br><span class="line">    <span class="keyword">def</span> <span class="title function_">write_release</span>(<span class="params">self</span>):</span><br><span class="line">        self._lock.release()</span><br></pre></td></tr></table></figure>
+<p>self.read_num 用来保存获得读锁的线程数，这个属性属于临界区，对其操作也要加锁，所以这里需要一个保护内部数据的额外的锁 self._extra 。</p>
+<p>但是这个锁是不公平的。理想情况下，线程获得所的机会应该是一样的，不管线程是读操作还是写操作。而从上述代码可以看到，读请求都会立即设置 self.read_num +&#x3D; 1，不管有没有获得锁，而写请求想要获得锁还得等待 read_num 为 0 。</p>
+<p>所以写者还在后续的改进中加入了条件机制。</p>
+<h2 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h2><p>锁的机制其实很好理解，而且大部分语言中也自带了库可以调用，需要注意的还是应用场景和避免死锁的问题。</p>
+<hr>
+<p>我发现掌握C#和C++在笔试的时候会有很多难受的地方，例如很多东西不能直接使用。尤其是自己处理IO的话，很麻烦。但是我还是偏爱C++。</p>
+<p>为了处理IO的题目，我会稍微练习一下python，作为备选语言。</p>
+
+      
+      
+    </div>
+    <footer class="article-footer">
+      <ul class="article-meta">
+        <li>
+          <span class="label">Published Date:</span>
+          <a href="" class="article-date">
+  <time class="dt-published" datetime="2021-04-05T02:20:17.000Z" itemprop="datePublished">2021-04-05</time>
+</a>
+
+        </li>
+        
+        
+        <hr/>
+      </ul>
+    </footer>
+  </div>
+  
+    
+<nav id="article-nav" class="article-nav">
+  
+    <a href="../../../05/23/pywinautoAndSubprocess/" id="article-nav-newer" class="article-nav-link-wrap newer">
+      <strong class="article-nav-caption">Newer</strong>
+      <div class="article-nav-title">
+        
+          通过创建并监听子进程并用pywinauto进行测试
+        
+      </div>
+    </a>
+  
+  
+    <a href="../../../03/11/locks-1/" id="article-nav-older" class="article-nav-link-wrap older">
+      <strong class="article-nav-caption">Older</strong>
+      <div class="article-nav-title">同步，互斥，阻塞</div>
+    </a>
+  
+</nav>
+
+
+  
+</article>
+
+
+
+
+
+
+
+
+
+
+      </div>
+      
+    <footer id="footer" class="post-footer footer">
+      
+      <hr/>
+      <div id="footerContent" class="footer-content">
+        <p>Post</p>
+
+
+      </div>
+    </footer>
+
+      
+
+
+
+
+
+
+
+
+<script src="https://cdn.jsdelivr.net/npm/jquery@3/dist/jquery.min.js"></script>
+
+
+<script src="https://cdn.jsdelivr.net/npm/clipboard@2/dist/clipboard.min.js"></script>
+
+
+
+  
+<script src="https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@3/dist/jquery.fancybox.min.js"></script>
+
+
+
+
+<script src="../js/typing.js"></script>
+
+<!--[if lt IE 9]>
+<script src="https://cdn.jsdelivr.net/npm/html5shiv@3/dist/html5shiv.min.js"></script>
+<![endif]-->
+
+
+
+
+
+
+
+    </div>
+  </body>
+</html>

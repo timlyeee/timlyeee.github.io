@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  
+  <title>简单的CMake小项目 | timlyeee.github.io</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <meta name="description" content="前言最近对于vs和cmake的熟悉程度日益加深并且对于各种项目更加熟悉之后，想试着在以往的项目中加入相关的元素，使其能够在各种环境下运行，比如不依赖特定的vs toolset和sdk，否则比如之前写的一个vs项目，当真是换了一台机器就不能运行了。 当然我想这也是大部分项目对于项目结构的一个最低要求。比如v8的项目或者libuv的第三方库实际上并没有对windows端有什么特例，而是单纯的从conf">
+<meta property="og:type" content="article">
+<meta property="og:title" content="简单的CMake小项目">
+<meta property="og:url" content="http://timlyeee.github.io/2021/07/19/petit-cmake/index.html">
+<meta property="og:site_name" content="timlyeee.github.io">
+<meta property="og:description" content="前言最近对于vs和cmake的熟悉程度日益加深并且对于各种项目更加熟悉之后，想试着在以往的项目中加入相关的元素，使其能够在各种环境下运行，比如不依赖特定的vs toolset和sdk，否则比如之前写的一个vs项目，当真是换了一台机器就不能运行了。 当然我想这也是大部分项目对于项目结构的一个最低要求。比如v8的项目或者libuv的第三方库实际上并没有对windows端有什么特例，而是单纯的从conf">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2021-07-19T15:11:14.000Z">
+<meta property="article:modified_time" content="2023-01-05T12:56:11.065Z">
+<meta property="article:author" content="timlyeee">
+<meta name="twitter:card" content="summary">
+  
+    <link rel="alternate" href="../../../../atom.xml" title="timlyeee.github.io" type="application/atom+xml">
+  
+  
+    <link rel="shortcut icon" href="../../../../favicon.ico">
+  
+  
+<link rel="stylesheet" href="../css/typing.css">
+
+  
+<link rel="stylesheet" href="../css/donate.css">
+
+  
+  
+    
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@3/dist/jquery.fancybox.min.css">
+
+  
+<meta name="generator" content="Hexo 6.1.0"></head>
+
+  
+    
+      <body>
+    
+  
+      <div id="container" class="container">
+        <article id="post-petit-cmake" class="h-entry article article-type-post" itemprop="blogPost" itemscope itemtype="https://schema.org/BlogPosting">
+  <header id="header" class="header">
+  <nav class="mobile-nav">
+    <h1 class="nickname">Tim Lee</h1>
+    <ul class="mobile-nav-menu">
+      <label for="mobile-menu-toggle"><a id="menu-button">&#9776; Menu</a></label>
+      <input type="checkbox" id="mobile-menu-toggle"/>
+      <ul class="mobile-nav-link">
+        
+        <a href="../index.html">Home</a>
+        
+        <a href="../archives">Archives</a>
+        
+        <a href="../about">About</a>
+        
+      </ul>
+    </ul>
+  </nav>
+	
+		<nav id="main-nav" class="main-nav">
+	
+	
+	  <a class="main-nav-link" href="../index.html">Home</a>
+	
+	  <a class="main-nav-link" href="../archives">Archives</a>
+	
+	  <a class="main-nav-link" href="../about">About</a>
+	
+  </nav>
+</header>
+
+  <hr/>
+  <div class="article-inner">
+    
+
+    
+      <header class="article-header">
+        
+  
+    <h1 class="p-name article-title" itemprop="headline name">
+      简单的CMake小项目
+    </h1>
+  
+
+      </header>
+    
+    <div class="e-content article-entry typo" itemprop="articleBody">
+      
+        <h2 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h2><p>最近对于vs和cmake的熟悉程度日益加深并且对于各种项目更加熟悉之后，想试着在以往的项目中加入相关的元素，使其能够在各种环境下运行，比如不依赖特定的vs toolset和sdk，否则比如之前写的一个vs项目，当真是换了一台机器就不能运行了。</p>
+<p>当然我想这也是大部分项目对于项目结构的一个最低要求。比如v8的项目或者libuv的第三方库实际上并没有对windows端有什么特例，而是单纯的从configure或者cmake开始配置。所以这次这篇文章想简单的记录一下自己写的第一个小的cmakelist.txt并且剖析一下其中的原理。</p>
+<span id="more"></span>
+<h2 id="cmake的必要条件"><a href="#cmake的必要条件" class="headerlink" title="cmake的必要条件"></a>cmake的必要条件</h2><p>首先一个项目最需要明确的有两点，就是项目的名称和使用的cmake版本。</p>
+<h3 id="环境声明"><a href="#环境声明" class="headerlink" title="环境声明"></a>环境声明</h3><figure class="highlight cmake"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">cmake_minimum_required</span>(VERSION <span class="number">3.8</span>)</span><br><span class="line"><span class="keyword">set</span>(PROJECT_NAME <span class="string">&quot;petitEngine&quot;</span>)</span><br><span class="line"><span class="keyword">project</span>(<span class="variable">$&#123;PROJECT_NAME&#125;</span> CXX)</span><br></pre></td></tr></table></figure>
+
+<p>以我的小opengl项目举例，我所认定的cmake版本必须是3.8以上并且语言是c++。所以我的环境设置就通过这几行代码来声明。</p>
+<h3 id="set"><a href="#set" class="headerlink" title="set"></a>set</h3><p>需要注意的是我们的项目名称的声明方法实际上是用set做的，而cmake中本身也有很多已经命名过的变量，比如PROJECT_NAME就是特指项目名称。</p>
+<p>在通常cmake文件中所有的变量都是通过set去初始化的，而后续对于设置的值的链接或者包含头文件的操作则需要用${}包含起来才能使用。</p>
+<h3 id="source-code"><a href="#source-code" class="headerlink" title="source code"></a>source code</h3><p>接下来我们要确认有哪些文件是本项目的源代码，并且需要和依赖文件区分开来。</p>
+<figure class="highlight cmake"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">set</span>(PROJ_SOURCES </span><br><span class="line">    <span class="variable">$&#123;CMAKE_CURRENT_LIST_DIR&#125;</span>/<span class="keyword">include</span>/main.cpp</span><br><span class="line">    ...</span><br><span class="line">)</span><br><span class="line"><span class="keyword">add_executable</span>(PROJECT_NAME <span class="variable">$&#123;PROJ_SOURCES&#125;</span>)</span><br></pre></td></tr></table></figure>
+<p>假设我们有一个main文件并且需要作为源文件导入到vs项目中，我们需要首先设置一个变量x，在这里我命名为Proj_source，并且将main的路径作为第二个变量写入。当然后续可以跟任意多的文件，只需要保证第一个变量是名称就行。</p>
+<p>接下来我们使用add_executable命令将这些源文件赋值到PROJECT_NAME中，表明这是它的源代码。当项目生成后，我们就可以在项目的路径中找到这些文件了。</p>
+<h3 id="依赖项"><a href="#依赖项" class="headerlink" title="依赖项"></a>依赖项</h3><figure class="highlight cmake"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">add_library</span>(glew STATIC IMPORTED GLOBAL)</span><br><span class="line"><span class="keyword">set_target_properties</span>(glew PROPERTIES</span><br><span class="line">    IMPORTED_LOCATION <span class="variable">$&#123;CMAKE_CURRENT_LIST_DIR&#125;</span>/glew-<span class="number">2.1</span>.<span class="number">0</span>/lib/Release/x64/glew32s.lib</span><br><span class="line">)</span><br><span class="line"><span class="keyword">add_library</span>(glfw STATIC IMPORTED GLOBAL)</span><br><span class="line"><span class="keyword">set_target_properties</span>(glfw PROPERTIES</span><br><span class="line">    IMPORTED_LOCATION <span class="variable">$&#123;CMAKE_CURRENT_LIST_DIR&#125;</span>/glfw-<span class="number">3.3</span>.bin.WIN64/lib-vc2017/glfw3.lib</span><br><span class="line">)</span><br></pre></td></tr></table></figure>
+<p>我的项目中依赖到了几个关键的库，比如glew和glfw来作为opengl的接口。所以我用add_library的方式将它们添加到各自的命名项中，注意此时不需要set来初始化变量。</p>
+<p>同时在add_library中STATIC表示该项是以静态库的方式导入，如果是动态库则使用SHARED。</p>
+<p>声明了几个库之后需要将它们链接到项目中，同时也可以添加一些别的必要库比如系统库，在cmake的过程中这些库即使没有被用户声明也是可以找到的。</p>
+<figure class="highlight cmake"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">target_link_libraries</span>(PROJECT_NAME PUBLIC </span><br><span class="line">	glfw </span><br><span class="line">	glew </span><br><span class="line">	opengl32)</span><br><span class="line"><span class="keyword">target_include_directories</span>(PROJECT_NAME PUBLIC</span><br><span class="line">    <span class="variable">$&#123;CMAKE_CURRENT_LIST_DIR&#125;</span>/glfw-<span class="number">3.3</span>.bin.WIN64/<span class="keyword">include</span>/GLFW</span><br><span class="line">    <span class="variable">$&#123;CMAKE_CURRENT_LIST_DIR&#125;</span>/glew-<span class="number">2.1</span>.<span class="number">0</span>/<span class="keyword">include</span>/GL                           </span><br><span class="line">)</span><br></pre></td></tr></table></figure>
+<p>我们不仅需要其静态库，同样需要头文件的支持，所以在link的同时可以使用target_include_directories命令来将头文件包含进去。这样就可以直接用</p>
+<figure class="highlight cxx"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;glew.h&gt;</span></span></span><br></pre></td></tr></table></figure>
+<p>的方法来包含而不需要添加相对路径。相对而言更加轻松。</p>
+<h3 id="cmake文件到vs项目"><a href="#cmake文件到vs项目" class="headerlink" title="cmake文件到vs项目"></a>cmake文件到vs项目</h3><p>当我们安装了cmake，visual studio和拥有了一个cmake文件之后，我们就可以省略繁琐的gcc命令而直接使用cmake命令来帮助我们完成操作了。<br>事实上我们同样可以通过cmake gui的方式来构建项目，但最终都是要回归代码的所以我在这里直接写shell脚本的写法了</p>
+<figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">cmake -B out/x64\</span><br><span class="line">     -A x64 \</span><br><span class="line">     -G<span class="string">&quot;Visual Studio 15 2017&quot;</span></span><br></pre></td></tr></table></figure>
+
+<p>通过上述脚本，用-B指定项目所在目录，用-A指定32位或者64位架构，用-G表示用哪种编译器，就可以生成我们的项目了。注意的是，这个脚本只在cmakelist.txt文件同级的目录下可用，如果在别的目录则需要加上-S选项来指定cmakelist.txt文件所在位置。</p>
+<p>总之，这些都可以在cmake –help中获取。</p>
+<h3 id="后记"><a href="#后记" class="headerlink" title="后记"></a>后记</h3><p>虽然但是，各种第三方开源库的编译仍然很麻烦，我所掌握的只是一些皮毛，在cmake中我们还可以控制各种宏的生成以及同样可以做if判断，这些同样使得我们很多依赖的库通过不同的构建选项编译出来的lib文件都不相同。</p>
+<p>一想到我虽然把第三方库都编出来了，但却在运行时崩溃，就免不了一阵头大。。</p>
+
+      
+      
+    </div>
+    <footer class="article-footer">
+      <ul class="article-meta">
+        <li>
+          <span class="label">Published Date:</span>
+          <a href="" class="article-date">
+  <time class="dt-published" datetime="2021-07-19T15:11:14.000Z" itemprop="datePublished">2021-07-19</time>
+</a>
+
+        </li>
+        
+        
+        <hr/>
+      </ul>
+    </footer>
+  </div>
+  
+    
+<nav id="article-nav" class="article-nav">
+  
+    <a href="../../../../2022/04/24/apache2ServerOnMacOSX/" id="article-nav-newer" class="article-nav-link-wrap newer">
+      <strong class="article-nav-caption">Newer</strong>
+      <div class="article-nav-title">
+        
+          在MacOSX上搭建本地测试服务器的踩坑
+        
+      </div>
+    </a>
+  
+  
+    <a href="../../../06/27/gitNormalSit/" id="article-nav-older" class="article-nav-link-wrap older">
+      <strong class="article-nav-caption">Older</strong>
+      <div class="article-nav-title">Git常用命令以及使用场景</div>
+    </a>
+  
+</nav>
+
+
+  
+</article>
+
+
+
+
+
+
+
+
+
+
+      </div>
+      
+    <footer id="footer" class="post-footer footer">
+      
+      <hr/>
+      <div id="footerContent" class="footer-content">
+        <p>Post</p>
+
+
+      </div>
+    </footer>
+
+      
+
+
+
+
+
+
+
+
+<script src="https://cdn.jsdelivr.net/npm/jquery@3/dist/jquery.min.js"></script>
+
+
+<script src="https://cdn.jsdelivr.net/npm/clipboard@2/dist/clipboard.min.js"></script>
+
+
+
+  
+<script src="https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@3/dist/jquery.fancybox.min.js"></script>
+
+
+
+
+<script src="../js/typing.js"></script>
+
+<!--[if lt IE 9]>
+<script src="https://cdn.jsdelivr.net/npm/html5shiv@3/dist/html5shiv.min.js"></script>
+<![endif]-->
+
+
+
+
+
+
+
+    </div>
+  </body>
+</html>
