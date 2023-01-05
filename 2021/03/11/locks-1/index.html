@@ -3,34 +3,25 @@
 <head>
   <meta charset="utf-8">
   
-  <title>同步，互斥，阻塞 | timlyeee.github.io</title>
+  <title>Untitled | timlyeee.github.io</title>
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
-  <meta name="description" content="昨日的笔试中被问到读写锁的定义和用途，突然发现读写和锁这两个词分开来我很熟悉，但合在一块儿我就一脸懵逼了。所以今天我特意花了一大部分时间来研究这些机制和各种锁。尽管网上大家说的都不太一样，但我还是梳理了一下我所理解的同步，互斥，阻塞和锁。但是锁的内容有些繁杂，我们先分清同步和阻塞这两个概念。">
-<meta property="og:type" content="article">
-<meta property="og:title" content="同步，互斥，阻塞">
-<meta property="og:url" content="http://timlyeee.github.io/2021/03/11/locks-1/index.html">
+  <meta property="og:type" content="website">
+<meta property="og:title" content="Untitled">
+<meta property="og:url" content="http://timlyeee.github.io/Untitled/index.html">
 <meta property="og:site_name" content="timlyeee.github.io">
-<meta property="og:description" content="昨日的笔试中被问到读写锁的定义和用途，突然发现读写和锁这两个词分开来我很熟悉，但合在一块儿我就一脸懵逼了。所以今天我特意花了一大部分时间来研究这些机制和各种锁。尽管网上大家说的都不太一样，但我还是梳理了一下我所理解的同步，互斥，阻塞和锁。但是锁的内容有些繁杂，我们先分清同步和阻塞这两个概念。">
 <meta property="og:locale" content="zh_CN">
-<meta property="og:image" content="http://timlyeee.github.io/2021/03/11/locks-1/basicMode.jpg">
-<meta property="og:image" content="http://timlyeee.github.io/2021/03/11/locks-1/kernal.jpg">
-<meta property="og:image" content="http://timlyeee.github.io/2021/03/11/locks-1/blockStateGraph.jpg">
-<meta property="og:image" content="http://timlyeee.github.io/2021/03/11/locks-1/blockAsync.jpg">
-<meta property="article:published_time" content="2021-03-11T09:32:01.000Z">
-<meta property="article:modified_time" content="2023-01-05T12:56:11.063Z">
+<meta property="article:published_time" content="2019-10-21T15:32:41.000Z">
+<meta property="article:modified_time" content="2023-01-05T12:56:11.061Z">
 <meta property="article:author" content="timlyeee">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:image" content="http://timlyeee.github.io/2021/03/11/locks-1/basicMode.jpg">
   
-    <link rel="alternate" href="../../../../atom.xml" title="timlyeee.github.io" type="application/atom+xml">
+    <link rel="alternate" href="../atom.xml" title="timlyeee.github.io" type="application/atom+xml">
   
   
-    <link rel="shortcut icon" href="../../../../favicon.ico">
+    <link rel="shortcut icon" href="../favicon.ico">
   
   
 <link rel="stylesheet" href="../css/typing.css">
-
-  
 <link rel="stylesheet" href="../css/donate.css">
 
   
@@ -40,7 +31,6 @@
 
   
 <meta name="generator" content="Hexo 6.1.0"></head>
-
   
     
       <body>
